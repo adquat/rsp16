@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="adquat_fdi_action" model="ir.actions.act_window">
+        <field name="name">FDI</field>
+        <field name="res_model">fdi.object</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <record id="adquat_fdi_tree_view" model="ir.ui.view">
+        <field name="name">adquat.fdi.tree.view</field>
+        <field name="model">fdi.object</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="project_id"/>
+                <field name="date"/>
+                <field name="aft_fdi" widget="many2many_binary"/>
+                <field name="pictures_fdi" widget="many2many_binary"/>
+                <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
+                       decoration-danger="(state == 'no')" widget="badge"/>
+                <button name="yes_finish" type="object" string="Oui" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                <button name="no_finish" type="object" string="Non" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,354 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="adquat_res_partner_form" model="ir.ui.view">
+        <field name="name">adquat.res.partner.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="category_id" position="after">
+                <field name="date_birth_partner"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="adquat_view_project_tree" model="ir.ui.view">
+          <field name="name">adquat.view.project.tree</field>
+          <field name="model">project.project</field>
+          <field name="arch" type="xml">
+              <tree string="Projets">
+                  <field name="name" string="Projets"/>
+                  <field name="partner_id"/>
+                  <field name="gestion_surplus"/>
+                  <field name="power_choose"/>
+                  <field name="currency_id" invisible="1" />
+                  <field name="amount_ht" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Total Montant (€)"/>
+                  <field name="amount_commission" widget="monetary" options="{'currency_field': 'currency_id'}"  sum="Total Commission (€)"/>
+                  <field name="user_id"/>
+                  <field name="date_signature"/>
+                  <field name="date_vt"/>
+                  <field name="date_mairie"/>
+                  <field name="date_install"/>
+                  <field name="date_fdi"/>
+                  <field name="date_sav"/>
+              </tree>
+          </field>
+      </record>
+
+    <record id="project.open_view_project_all_group_stage" model="ir.actions.act_window">
+            <field name="name">Projects</field>
+            <field name="res_model">project.project</field>
+            <field name="domain">[]</field>
+            <field name="view_mode">kanban,form,tree</field>
+            <field name="view_id" ref="adquat_view_project_tree"/>
+            <field name="search_view_id" ref="project.view_project_project_filter"/>
+            <field name="target">main</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No projects found. Let's create one!
+                </p><p>
+                    Projects regroup tasks on the same topic, and each has its dashboard.
+                </p>
+            </field>
+        </record>
+
+    <record id="adquat_project_project_form" model="ir.ui.view">
+        <field name="name">adquat.project.project.form</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+                <!-- TODO -->
+<!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
+<!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
+<!--            <xpath expr="//header" position="inside">-->
+<!--                <button name="finish_pose" string="Pose Fini" type="object" class="oe_highlight" attrs="{'invisible': ['|', ('stage_id', '!=', 10), ('all_file_is_good', '=', False)]}"/>-->
+<!--                <button name="create_fdi" string="Créer FDI" type="object" attrs="{'invisible': [('stage_id', '!=', 10)]}"/>-->
+<!--                <button name="finish_project" string="Clôturer projet" class="oe_highlight" type="object" attrs="{'invisible': [('stage_id', '!=', 5)]}"/>-->
+<!--                <button name="create_sav" string="Créer SAV" type="object" attrs="{'invisible': [('stage_id', '!=', 5)]}"/>-->
+<!--            </xpath>-->
+            <xpath expr="//div[@name='dates']" position="attributes">
+                <attribute name="invisible">
+                    1
+                </attribute>
+            </xpath>
+            <xpath expr="//notebook/page[@name='description']" position="attributes">
+                <attribute name="string">
+                    Fiche Client
+                </attribute>
+            </xpath>
+            <xpath expr="//notebook/page[@name='description']/field[@name='description']" position="attributes">
+                <attribute name="invisible">
+                    1
+                </attribute>
+            </xpath>
+            <field name="user_id" position="replace"/>
+            <xpath expr="//group/group" position="inside">
+                <field name="gestion_surplus"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="amount_ht" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="amount_commission" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="power_choose"/>
+                <field name="user_id"  widget="many2one_avatar_user"/>
+                <field name="tech_ids" widget="many2many_tags"/>
+            </xpath>
+
+            <xpath expr="//group/group" position="attributes">
+                <attribute name="name">
+                    infos
+                </attribute>
+                <attribute name="string">
+                    Infos
+                </attribute>
+            </xpath>
+            <xpath expr="//group/group" position="after">
+                <group name="date" string="Dates">
+                    <field name="date_signature"/>
+                    <field name="date_vt"/>
+                    <field name="date_mairie"/>
+                    <field name="date_install"/>
+                    <field name="date_fdi"/>
+                    <field name="date_sav"/>
+                    <field name="date_mise_service_enedis"/>
+                </group>
+            </xpath>
+            <xpath expr="//notebook/page[@name='description']/field[@name='description']" position="after">
+                <group>
+                    <group string="Informations client">
+                        <field name="name_partner" string="Nom Client"/>
+                        <field name="birth_partner"/>
+                        <span class="o_form_label o_td_label" name="address_name">
+                            <b >Adresse</b>
+                        </span>
+                        <div class="o_address_format">
+                            <field name="street" placeholder="Rue..." class="o_address_street"/>
+                            <field name="street2" placeholder="Rue 2..." class="o_address_street"/>
+                            <field name="city" placeholder="Ville" class="o_address_city"/>
+                            <field name="state_id" class="o_address_state" placeholder="État" options="{'no_open': True, 'no_quick_create': True}" context="{'country_id': country_id, 'default_country_id': country_id, 'zip': zip}"/>
+                            <field name="zip" placeholder="Code Postal" class="o_address_zip"/>
+                            <field name="country_id" placeholder="Pays" class="o_address_country" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                        </div>
+                        <field name="time"/>
+                        <field name="has_complete_partner_address" invisible="1"/>
+                        <label class="oe_read_only" for="has_complete_partner_address" invisible="1"/>
+                        <div>
+                            <button
+                                name="action_fsm_navigate" type="object" class="btn btn-link pl-0 pt-0 pb-2"
+                                icon="fa-arrow-right" string="Calcul itinéraire avec Google" colspan="2"
+                                attrs="{'invisible': [('has_complete_partner_address', '=', False)]}"/>
+                        </div>
+                        <field name="phone_partner" widget="phone"/>
+                        <field name="mail_partner"/>
+                        <field name="parrainage"/>
+                    </group>
+                    <group>
+                        <group string="Informations techniques" colspan="4">
+                            <field name="existing_power"/>
+                            <field name="rv_or_auto"/>
+                            <field name="crae" attrs="{'invisible': [('existing_power', '=', 0)]}"/>
+                            <field name="bta" attrs="{'invisible': [('existing_power', '=', 0)]}"/>
+                            <field name="msb" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}"/>
+                        </group>
+                        <group string="Validation" colspan="4">
+                            <field name="date_recepisse"/>
+                            <field name="abf"/>
+                            <field name="domofinance"/>
+                            <field name="dossier_complet"/>
+                        </group>
+                    </group>
+                </group>
+                <group string="Pièces jointes">
+                    <field name="devis_and_chq" widget="many2many_binary"/>
+                    <field name="cgv" widget="many2many_binary"/>
+                    <field name="taxes_foncieres" widget="many2many_binary"/>
+                    <field name="fact_elec" widget="many2many_binary"/>
+                    <field name="mandat_mairie" widget="many2many_binary"/>
+                    <field name="mandat_enedis" widget="many2many_binary"/>
+                    <field name="mandat_OA" attrs="{'invisible': [('gestion_surplus', '!=', 'oa')]}" widget="many2many_binary"/>
+                </group>
+            </xpath>
+            <xpath expr="//notebook/page[@name='description']" position="after">
+                <page name="vt" string="Visite Technique" default_focus="1">
+                    <group>
+                        <group string="Infos">
+                            <field name="date_vt"/>
+                            <field name="tech_id" widget="many2one_avatar_employee" />
+                        </group>
+                        <group string="Pièces jointes">
+                            <field name="file_to_join" widget="many2many_binary"/>
+                            <field name="pic_to_join" widget="many2many_binary"/>
+                        </group>
+                    </group>
+                </page>
+                <page name="mairie" string="Mairie">
+                    <group>
+                        <group string="Informations">
+                            <field name="sending_date_mairie"/>
+                            <field name="mairie_answer"/>
+                            <separator colspan="2" string="Validation"/>
+                            <field name="done"/>
+                        </group>
+                        <group string="Pièces jointes">
+                            <field name="mairie_answer_to_join" widget="many2many_binary"/>
+                            <field name="recepisse_to_join" widget="many2many_binary"/>
+                            <field name="other_attachments_to_join" widget="many2many_binary"/>
+                            <field name="abf_to_join" widget="many2many_binary"/>
+                            <field name="rsp_to_join" widget="many2many_binary"/>
+                        </group>
+                    </group>
+                </page>
+                <page name="pose" string="Pose">
+                    <group>
+                        <group string="Informations">
+                            <field name="date_install"/>
+                            <field name="return_caution"/>
+                        </group>
+                        <group string="Pièces jointes">
+                            <field name="aft" widget="many2many_binary"/>
+                            <field name="picture"  widget="many2many_binary"/>
+                            <field name="calepinage_emphase" widget="many2many_binary"/>
+                            <field name="implantation_emphase" widget="many2many_binary"/>
+                            <field name="quotation_alaska" widget="many2many_binary"/>
+                            <field name="invoice_alaska" widget="many2many_binary"/>
+                            <field name="invoice_finalRsp" widget="many2many_binary"/>
+                        </group>
+                        <field name="all_file_is_good" invisible="1"/>
+                    </group>
+                </page>
+                <page name="fdi" string="FDI">
+                    <group>
+                        <field name="fdi_ids" nolabel="1">
+                            <tree editable="bottom">
+                                <field name="date"/>
+                                <field name="aft_fdi" widget="many2many_binary"/>
+                                <field name="pictures_fdi" widget="many2many_binary"/>
+                                <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
+                                       decoration-danger="(state == 'no')" widget="badge"/>
+                                <button name="yes_finish" type="object" string="Oui" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                                <button name="no_finish" type="object" string="Non" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+                <page name="sav" string="SAV">
+                    <group>
+                        <field name="sav_ids" nolabel="1">
+                            <tree editable="bottom">
+                                <field name="type_sav"/>
+                                <field name="other_type_sav" attrs="{'invisible': [('type_sav', '!=', '3')]}"/>
+                                <field name="date"/>
+                                <field name="return_picture" widget="many2many_binary"/>
+                                <field name="sheet_intervention" widget="many2many_binary"/>
+                                <field name="picture_sav" widget="many2many_binary"/>
+                                <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
+                                       decoration-danger="(state == 'no')" widget="badge"/>
+                                <button name="mise_en_service" type="object" string="Mise en Service" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                                <button name="close_project" type="object" string="Clôturer projet" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                                <button name="no_finish_sav" type="object" string="Non Fini" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+                <page name="mise_service" string="Mise en Service">
+                    <notebook>
+                        <page name="enedis" string="Enedis - Consuel">
+                            <group>
+                                <group name="enedis" string="Enedis">
+                                    <field name="enedis_done"/>
+                                    <field name="numb_pdr"/>
+                                    <field name="consuel_transmitted_enedis"/>
+                                    <separator string="Pièces jointes Enedis"/>
+                                    <field name="synthese" widget="many2many_binary"/>
+                                </group>
+                                <group name="consuel" string="Consuel">
+                                    <field name="consuel_done"/>
+                                    <field name="shipping_number"/>
+                                    <field name="type_of_visit"/>
+                                    <field name="intended_date"/>
+                                    <field name="date_contre_visite"/>
+                                    <field name="date_attestation"/>
+                                    <separator string="Pièces jointes Consuel"/>
+                                    <field name="pdf_consuel" widget="many2many_binary"/>
+                                    <field name="fileTech_and_schema" widget="many2many_binary"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="msb" string="MyLight" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}">
+                            <group>
+                                <field name="contrat_mylight"/>
+                            </group>
+                        </page>
+                        <page name="oa" string="OA" attrs="{'invisible': [('gestion_surplus', '!=', 'oa')]}">
+
+                        </page>
+                        <page name="other" string="Autre" attrs="{'invisible': [('gestion_surplus', '!=', 'other')]}">
+
+                        </page>
+                    </notebook>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="adquat_view_graph_for_dashboard" model="ir.ui.view">
+        <field name="name">adquat.view.graph.for.dashboard</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <graph type="line" sample="1">
+
+            </graph>
+        </field>
+    </record>
+
+    <record id="adquat_view_pivot_for_dashboard" model="ir.ui.view">
+        <field name="name">adquat.view.pivot.for.dashboard</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <pivot string="Stock Overview" sample="1">
+                <field name="stage_id" type="col"/>
+                <field name="partner_id" type="row"/>
+<!--                <field name="amount_ht" type="measure"/>-->
+            </pivot>
+        </field>
+    </record>
+<!-- TODO -->
+<!--    <record id="adquat_view_dashboard_project" model="ir.ui.view">-->
+<!--        <field name="name">adquat.view.dashboard.project</field>-->
+<!--        <field name="model">project.project</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <dashboard sample="1">-->
+<!--                <view type="graph" ref="adquat_rsp.adquat_view_graph_for_dashboard"/>-->
+<!--                <group col="1">-->
+<!--                    <aggregate name="devis_validate" string="Devis Validés" field="nb_quotation_validate" domain="[('stage_id', '=', 1)]" group_operator="count"/>-->
+<!--                    <aggregate name="vt_to_planif" string="VT à planifier" field="nb_vt_to_planif" domain="[('stage_id', '=', 8)]" group_operator="count"/>-->
+<!--                    <aggregate name="pose_to_planif" string="Pose à planifier" field="nb_pose_to_planif" domain="[('stage_id', '=', 4)]" group_operator="count"/>-->
+<!--                    <aggregate name="pose_planif" string="Pose Finis" field="nb_pose_planif" domain="[('stage_id', '=', 5)]" group_operator="count"/>-->
+<!--                    <aggregate name="sav_finish" string="SAV finis" field="nb_sav_finish" domain="[('sav_ids.state', '=', 'finish')]" group_operator="count"/>-->
+<!--                    <aggregate name="sav_to_planif" string="SAV à planifier" field="nb_sav_to_planif" domain="[('sav_ids.state', '=', 'a_planif')]" group_operator="count"/>-->
+<!--                    <aggregate name="fdi_to_planif" string="FDI à planifier" field="nb_fdi_to_planif" domain="[('fdi_ids.state', '=', 'a_planif')]" group_operator="count"/>-->
+<!--                    <aggregate name="fdi_finish" string="FDI finis" field="nb_fdi_finish" domain="[('fdi_ids.state', '=', 'finish')]" group_operator="count"/>-->
+<!--                    <aggregate name="project_finish" string="Dossiers clôturés" field="nb_project_finish" domain="[('stage_id', '=', 6)]" group_operator="count"/>-->
+<!--                </group>-->
+<!--                <view type="pivot" ref="adquat_rsp.adquat_view_pivot_for_dashboard"/>-->
+<!--            </dashboard>-->
+<!--        </field>-->
+<!--    </record>-->
+<!--    <record id="adquat_dashboard_project" model="ir.actions.act_window">-->
+<!--        <field name="name">Tableau de Bord</field>-->
+<!--            <field name="res_model">project.project</field>-->
+<!--            <field name="view_mode">dashboard,graph,pivot</field>-->
+<!--            <field name="view_id" ref="adquat_view_dashboard_project"/>-->
+<!--&lt;!&ndash;            <field name="search_view_id" ref="project.view_project_project_filter"/>&ndash;&gt;-->
+<!--            <field name="target">main</field>-->
+<!--    </record>-->
+
+    <menuitem id="project.menu_projects_group_stage" name="Projects" parent="project.menu_main_pm"
+              sequence="1" groups="project.group_project_stages">
+        <menuitem action="project.open_view_project_all_group_stage" id="menu_open_all_projects" name="Projets"
+                  groups="project.group_project_stages"/>
+        <menuitem action="adquat_fdi_action" id="menu_open_all_fdi" name="FDI"
+                  groups="project.group_project_stages"/>
+        <menuitem action="adquat_sav_action" id="menu_open_all_sav" name="SAV"
+                  groups="project.group_project_stages"/>
+    </menuitem>
+<!--    TODO-->
+<!--    <menuitem action="adquat_dashboard_project" id="menu_open_dashboard" name="Tableau de Bord" parent="project.menu_main_pm"/>-->
+</odoo>

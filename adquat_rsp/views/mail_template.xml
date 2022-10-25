@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+       <record id="mail_auto_vt" model="mail.template">
+           <field name="name">Mail confirmation rdv VT</field>
+           <field name="model_id" ref="project.model_project_project"/>
+           <field name="partner_to">{{ object.partner_id.id }}</field>
+           <field name="email_to">{{ object.partner_id.email }}</field>
+           <field name="subject">Confirmation de rdv visite technique</field>
+           <field name="body_html" type="html">
+               <div style="margin: 0px; padding: 0px;">
+                   Bonjour <t t-out="object.partner_id.name"/>,
+                   <br/><br/>
+                   Je vous confirme votre rendez-vous avec notre technicien pour votre visite technique le:<br/>
+                   <t t-out="object.date_vt.strftime('%d/%m/%Y à %Hh%M')" style="text-align: center;"/>.
+                   <br/><br/>
+                   Cette visite dure 1 heure.
+                   <br/><br/>
+                   Restant à votre disposition,
+                   <br/><br/>
+                   Cordialement,
+               </div>
+           </field>
+       </record>
+
+        <record id="mail_auto_install" model="mail.template">
+            <field name="name">Mail confirmation installation solaire</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Confirmation installation solaire</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Je vous confirme que votre installation solaire aura lieu sur 1 et/ou 2 jours le et/ou les:<br/>
+                    <t t-if="object.date_install" t-out="object.date_install.strftime('%d/%m/%Y')" style="text-align: center;"/>
+                    <br/><br/>
+                    Les techniciens arriveront entre 08 et 09 h, ils vous contacteront avant d'arriver.
+                    <br/><br/>
+                    Restant à votre disposition,
+                    <br/><br/>
+                    Cordialement,
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_auto_end_install" model="mail.template">
+            <field name="name">Mail confirmation fin d'installation solaire</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Confirmation fin d'installation solaire</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Je vous confirme que votre fin d'installation solaire aura lieu le:
+                    <br/><t t-out="object.date_fdi" style="text-align: center;"/>
+                    <br/><br/>
+                    Restant à votre disposition,
+                    <br/><br/>
+                    Cordialement,
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_auto_sav" model="mail.template">
+            <field name="name">Mail confirmation SAV</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_to }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Confirmation SAV</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le:
+                    <br/><t t-out="object.date_sav.strftime('%d/%m/%Y à %Hh%M')" style="text-align: center;"/>
+                    <br/><br/>
+                    Restant à votre disposition,
+                    <br/><br/>
+                    Cordialement,
+
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_auto_dp_mairie" model="mail.template">
+            <field name="name">Mail confirmation de la DP à la mairie</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Confirmation envoi de la DP à la mairie</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Je vous confirme que votre déclaration préalable de travaux concernant votre installation solaire a été
+                    transmise le:
+                    <br/> <t t-out="object.sending_date_mairie.strftime('%d/%m/%Y')"/>
+                    <br/><br/>
+                    Restant à votre disposition,
+                    <br/><br/>
+                    Cordialement,
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_auto_accord_mairie" model="mail.template">
+            <field name="name">Mail confirmation accord mairie</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Confirmation accord mairie</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Nous avons le plaisir de vous transmettre l'accord de votre mairie concernant votre installation solaire.
+                    <br/><br/>
+                    Notre service de planification va vous contacter prochainement pour fixer une date d'installation,
+                    <br/><br/>
+                    Restant à votre disposition,
+                    <br/><br/>
+                    Cordialement,
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_auto_end_install_souscription_mylight" model="mail.template">
+            <field name="name">Mail fin d’installation pour souscription Mylight batterie virtuelle (MSB)</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Souscription MyLight batterie virtuelle (MSB)</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Votre installation vient d'être réalisée, vous devez souscrire au contrat d'électricité de MYLIGHT
+                    <b>(si ce n'est pas déjà fait)</b> en cliquant sur le lien: https://souscription.mylight-systems.com/#/offer
+                    <br/>Je vous joins la procédure.
+                    <br/><br/>
+                    Merci de me confirmer par retour de mail votre souscription.
+                    <br/><br/>
+                    Restant à votre disposition,
+                    <br/><br/>
+                    Cordialement,
+                </div>
+            </field>
+<!--            Pièce jointe à fournir-->
+        </record>
+
+        <record id="mail_auto_synthese_enedis" model="mail.template">
+            <field name="name">Mail confirmation envoi synthèse Enedis</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Confirmation envoi synthèse Enedis</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Vous trouverez ci-joint la synthèse de la demande de raccordement Enedis concernant votre installation solaire.
+                    <br/><br/>
+                    Restant à votre disposition,
+                    <br/><br/>
+                    Cordialement,
+                </div>
+            </field>
+<!--            Pièce jointe à fournir-->
+        </record>
+
+        <record id="mail_auto_envoi_consuel_if_msb" model="mail.template">
+            <field name="name">Mail confirmation envoi attestation Consuel quand MSB</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Confirmation envoi attestation Consuel</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Vous trouverez ci-joint l'attestation du Consuel concernant votre installation solaire.
+                    <br/><br/>
+                    Nous l'avons transmis à Enedis et MyLight.
+                    <br/><br/>
+                    Restant à votre disposition,
+                    <br/><br/>
+                    Cordialement,
+                </div>
+            </field>
+<!--            Pièces jointes à fournir-->
+        </record>
+
+        <record id="mail_auto_envoi_consuel_if_oa" model="mail.template">
+            <field name="name">Mail confirmation envoi attestation Consuel quand OA</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Confirmation envoi attestation Consuel</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Vous trouverez ci-joint l'attestation du Consuel concernant votre installation solaire, à bien conserver.<br/>
+                    Vous allez recevoir un mail de EDF OA SOLAIRE pour votre contrat d'obligation d'achat.
+                    <br/><br/>
+                    Vous pouvez créer votre espace producteur sur leur portail: https://solaire.edf-oa.fr/oasv2/login.action
+                    pour suivre l'avancement de la création de votre contrat et facturer votre surplus chaque année.
+                    <br/><br/>
+                    Je vous joins les procédures que j'ai.
+                    <br/><br/>
+                    Cordialement,
+                </div>
+            </field>
+<!--            5 pièces jointes à fournir-->
+        </record>
+
+        <record id="mail_auto_satisfaction_client" model="mail.template">
+            <field name="name">Mail satisfaction client et avis google</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="subject">Avis google et satisfaction</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Bonjour <t t-out="object.partner_id.name"/>,
+                    <br/><br/>
+                    Nous vous remercions de la confiance que vous nous avez accordé pour votre installation solaire.
+                    <br/><br/>
+                    Nous espérons avoir répondu à vos attentes.
+                    <br/><br/>
+                    Votre avis nous est précieux et nous erions ravis que vous partagiez votre expérience, vous pouvez cliquer
+                    sur ce lien pour donner votre avis: https://g.page/r/CWjCySRsTaa-EAg/review
+                    <br/><br/>
+                    N'hésitez pas à nous recommander auprès de vos proches avec notre offre de parrainage (200 € de réduction
+                    sur la commande pour le filleul et 200 € de chèques cadeaux pour le parrain après installation et règlement du
+                    filleul).
+                    <br/><br/>
+                    Vous remerciant,
+                    <br/><br/>
+                    Solairement vôtre,
+                    <br/><br/>
+                    Toute l'équipe RHONE SOLAIRE PRO vous souhaite une bonne continuation,
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>
