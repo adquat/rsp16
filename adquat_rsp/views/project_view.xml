@@ -1,16 +1,5 @@
 <?xml version="1.0"?>
 <odoo>
-    <record id="adquat_res_partner_form" model="ir.ui.view">
-        <field name="name">adquat.res.partner.form</field>
-        <field name="model">res.partner</field>
-        <field name="inherit_id" ref="base.view_partner_form"/>
-        <field name="arch" type="xml">
-            <field name="category_id" position="after">
-                <field name="date_birth_partner"/>
-            </field>
-        </field>
-    </record>
-
     <record id="adquat_view_project_tree" model="ir.ui.view">
           <field name="name">adquat.view.project.tree</field>
           <field name="model">project.project</field>
@@ -56,15 +45,35 @@
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="arch" type="xml">
-                <!-- TODO -->
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" name="%(action_view_documents_project_project)d" groups="documents.group_documents_user"
+                    type="action" icon="fa-file-text-o" context="{'default_partner_id': partner_id}">
+                    <field string="Documents" name="document_count" widget="statinfo"/>
+                </button>
+            </div>
+            <field name="name" position="attributes">
+                <attribute name="placeholder">Nom du projet</attribute>
+            </field>
+            <field name="label_tasks" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <xpath expr="//label[@for='date_start']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='%(project.project_share_wizard_action)d']" position="replace"/>
+            <xpath expr="//button[@name='%(project.project_share_wizard_action)d']" position="replace"/>
 <!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
 <!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
-<!--            <xpath expr="//header" position="inside">-->
-<!--                <button name="finish_pose" string="Pose Fini" type="object" class="oe_highlight" attrs="{'invisible': ['|', ('stage_id', '!=', 10), ('all_file_is_good', '=', False)]}"/>-->
-<!--                <button name="create_fdi" string="Créer FDI" type="object" attrs="{'invisible': [('stage_id', '!=', 10)]}"/>-->
-<!--                <button name="finish_project" string="Clôturer projet" class="oe_highlight" type="object" attrs="{'invisible': [('stage_id', '!=', 5)]}"/>-->
-<!--                <button name="create_sav" string="Créer SAV" type="object" attrs="{'invisible': [('stage_id', '!=', 5)]}"/>-->
-<!--            </xpath>-->
+            <xpath expr="//header" position="inside">
+                <button name="finish_pose" string="Pose terminée" type="object" class="oe_highlight" groups="project.group_project_stages"
+                        attrs="{'invisible': ['|', ('stage_id', '!=', %(adquat_rsp.project_project_stage_sav)d), ('all_file_is_good', '=', False)]}"/><!-- ct 10 avant -->
+                <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"
+                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_sav)d)]}"/><!-- ct 10 avant -->
+                <button name="finish_project" string="Clôturer projet" class="oe_highlight" type="object" groups="project.group_project_stages"
+                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/><!-- ct 5 avant -->
+                <button name="create_sav" string="Créer SAV" type="object" groups="project.group_project_stages"
+                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/><!-- ct 5 avant -->
+            </xpath>
             <xpath expr="//div[@name='dates']" position="attributes">
                 <attribute name="invisible">
                     1
@@ -82,13 +91,19 @@
             </xpath>
             <field name="user_id" position="replace"/>
             <xpath expr="//group/group" position="inside">
-                <field name="gestion_surplus"/>
-                <field name="currency_id" invisible="1"/>
-                <field name="amount_ht" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="amount_commission" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="power_choose"/>
-                <field name="user_id"  widget="many2one_avatar_user"/>
+                <label for="power_choose"/>
+                <div class="o_row">
+                    <field name="power_choose"/><span>kWc</span>
+                </div>
+<!--                <field name="power_choose" string="Puissance (kW"/>-->
+                <field name="gestion_surplus" widget="selection_badge" options="{'horizontal': true}"/>
+                <field name="user_ids" widget="many2many_tags"/>
                 <field name="tech_ids" widget="many2many_tags"/>
+                <separator string="Informations financières"/>
+                <field name="amount_ht" widget="monetary" options="{'currency_field': 'currency_id'}" colspan="2"/>
+                <field name="prct_commission" widget="percentage"/>
+                <field name="amount_commission" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" invisible="1"/>
             </xpath>
 
             <xpath expr="//group/group" position="attributes">
@@ -96,11 +111,11 @@
                     infos
                 </attribute>
                 <attribute name="string">
-                    Infos
+                    Informations générales
                 </attribute>
             </xpath>
             <xpath expr="//group/group" position="after">
-                <group name="date" string="Dates">
+                <group name="date" string="Dates principales">
                     <field name="date_signature"/>
                     <field name="date_vt"/>
                     <field name="date_mairie"/>
@@ -112,53 +127,64 @@
             </xpath>
             <xpath expr="//notebook/page[@name='description']/field[@name='description']" position="after">
                 <group>
-                    <group string="Informations client">
-                        <field name="name_partner" string="Nom Client"/>
-                        <field name="birth_partner"/>
-                        <span class="o_form_label o_td_label" name="address_name">
-                            <b >Adresse</b>
-                        </span>
+                    <group>
+                        <group string="Informations client">
+                            <field name="prenom_partner"/>
+                            <field name="name_partner"/>
+                            <field name="birth_partner"/>
+                            <field name="parrainage"/>
+                        </group>
+                        <group string="Coordonnées">
+                            <field name="phone_partner" widget="phone"/>
+                            <field name="mobile_partner" widget="phone"/>
+                            <field name="mail_partner"/>
+                        </group>
+                    </group>
+                    <group string="Informations techniques">
+                        <label for="existing_power"/>
+                        <div class="o_row">
+                            <field name="existing_power"/><span>kWc</span>
+                        </div>
+                        <field name="rv_or_auto" widget="selection_badge" options="{'horizontal': true}"
+                               attrs="{'invisible': [('existing_power', '=', 0)]}"/>
+                        <field name="crae" attrs="{'invisible': [('existing_power', '=', 0)]}"/>
+                        <field name="bta" attrs="{'invisible': [('existing_power', '=', 0)]}"/>
+                        <field name="msb" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}"/>
+                    </group>
+                </group>
+                <group>
+                    <group string="Adresse">
                         <div class="o_address_format">
                             <field name="street" placeholder="Rue..." class="o_address_street"/>
                             <field name="street2" placeholder="Rue 2..." class="o_address_street"/>
-                            <field name="city" placeholder="Ville" class="o_address_city"/>
-                            <field name="state_id" class="o_address_state" placeholder="État" options="{'no_open': True, 'no_quick_create': True}" context="{'country_id': country_id, 'default_country_id': country_id, 'zip': zip}"/>
                             <field name="zip" placeholder="Code Postal" class="o_address_zip"/>
+                            <field name="city" placeholder="Ville" class="o_address_city"/>
+<!--                            <field name="state_id" class="o_address_state" placeholder="État" options="{'no_open': True, 'no_quick_create': True}" context="{'country_id': country_id, 'default_country_id': country_id, 'zip': zip}"/>-->
                             <field name="country_id" placeholder="Pays" class="o_address_country" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
                         </div>
-                        <field name="time"/>
-                        <field name="has_complete_partner_address" invisible="1"/>
-                        <label class="oe_read_only" for="has_complete_partner_address" invisible="1"/>
+                        <group>
+                            <field name="time"/>
+                            <field name="has_complete_partner_address" invisible="1"/>
+                            <label class="oe_read_only" for="has_complete_partner_address" invisible="1"/>
+                        </group>
                         <div>
                             <button
                                 name="action_fsm_navigate" type="object" class="btn btn-link pl-0 pt-0 pb-2"
                                 icon="fa-arrow-right" string="Calcul itinéraire avec Google" colspan="2"
                                 attrs="{'invisible': [('has_complete_partner_address', '=', False)]}"/>
                         </div>
-                        <field name="phone_partner" widget="phone"/>
-                        <field name="mail_partner"/>
-                        <field name="parrainage"/>
                     </group>
-                    <group>
-                        <group string="Informations techniques" colspan="4">
-                            <field name="existing_power"/>
-                            <field name="rv_or_auto"/>
-                            <field name="crae" attrs="{'invisible': [('existing_power', '=', 0)]}"/>
-                            <field name="bta" attrs="{'invisible': [('existing_power', '=', 0)]}"/>
-                            <field name="msb" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}"/>
-                        </group>
-                        <group string="Validation" colspan="4">
-                            <field name="date_recepisse"/>
-                            <field name="abf"/>
-                            <field name="domofinance"/>
-                            <field name="dossier_complet"/>
-                        </group>
+                    <group string="Validation">
+                        <field name="date_recepisse"/>
+                        <field name="abf"/>
+                        <field name="domofinance"/>
+                        <field name="dossier_complet"/>
                     </group>
                 </group>
-                <group string="Pièces jointes">
+                <group string="Pièces jointes" context="{'project_onglet':'fiche'}">
                     <field name="devis_and_chq" widget="many2many_binary"/>
                     <field name="cgv" widget="many2many_binary"/>
-                    <field name="taxes_foncieres" widget="many2many_binary"/>
+                    <field name="taxes_foncieres" widget="many2many_binary" />
                     <field name="fact_elec" widget="many2many_binary"/>
                     <field name="mandat_mairie" widget="many2many_binary"/>
                     <field name="mandat_enedis" widget="many2many_binary"/>
@@ -280,10 +306,90 @@
 
                         </page>
                         <page name="other" string="Autre" attrs="{'invisible': [('gestion_surplus', '!=', 'other')]}">
-
                         </page>
                     </notebook>
                 </page>
+            </xpath>
+        </field>
+    </record>
+    <!--DOCUMENTS -->
+    <record id="edit_project_document_form_inherit_adquat" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.adquat</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="documents_project.edit_project_document_form_inherit"/>
+        <field name="priority">33</field>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='documents_setting']" position="after">
+                <div class="o_setting_box mt-4" id="subfolders_setting" attrs="{'invisible': [('use_documents', '=', False)]}" >
+                <div class="o_setting_left_pane">
+                    <field name="use_subfolders"/>
+                </div>
+                <div class="o_setting_right_pane">
+                    <label for="use_subfolders"/>
+                    <div class="text-muted">
+                        Ranger les pièces jointes en sous-dossiers triés par onglet
+                    </div>
+                    <div attrs="{'invisible': [('use_subfolders', '=', False)]}" class="mt-3">
+                        <div class="row">
+                            <div class="col-2">
+                                <label for="documents_folder_fiche" class="fw-bold"/>
+                                <field name="company_id" invisible="1"/>
+                            </div>
+                            <div class="col-4">
+                                <field name="documents_folder_fiche" class="ps-2 w-75" attrs="{'required': [('use_subfolders', '=', True), ('id', '!=', False)]}" context="{'documents_project': True, 'default_company_id': company_id}"/>
+                            </div>
+                            <div class="col-2">
+                                <label for="documents_folder_vt" class="fw-bold"/>
+                                <field name="company_id" invisible="1"/>
+                            </div>
+                            <div class="col-4">
+                                <field name="documents_folder_vt" class="ps-2 w-75" attrs="{'required': [('use_subfolders', '=', True), ('id', '!=', False)]}" context="{'documents_project': True, 'default_company_id': company_id}"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2">
+                                <label for="documents_folder_mairie" class="fw-bold"/>
+                                <field name="company_id" invisible="1"/>
+                            </div>
+                            <div class="col-4">
+                                <field name="documents_folder_mairie" class="ps-2 w-75" attrs="{'required': [('use_subfolders', '=', True), ('id', '!=', False)]}" context="{'documents_project': True, 'default_company_id': company_id}"/>
+                            </div>
+                            <div class="col-2">
+                                <label for="documents_folder_pose" class="fw-bold"/>
+                                <field name="company_id" invisible="1"/>
+                            </div>
+                            <div class="col-4">
+                                <field name="documents_folder_pose" class="ps-2 w-75" attrs="{'required': [('use_subfolders', '=', True), ('id', '!=', False)]}" context="{'documents_project': True, 'default_company_id': company_id}"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2">
+                                <label for="documents_folder_fdi" class="fw-bold"/>
+                                <field name="company_id" invisible="1"/>
+                            </div>
+                            <div class="col-4">
+                                <field name="documents_folder_fdi" class="ps-2 w-75" attrs="{'required': [('use_subfolders', '=', True), ('id', '!=', False)]}" context="{'documents_project': True, 'default_company_id': company_id}"/>
+                            </div>
+                            <div class="col-2">
+                                <label for="documents_folder_sav" class="fw-bold"/>
+                                <field name="company_id" invisible="1"/>
+                            </div>
+                            <div class="col-4">
+                                <field name="documents_folder_sav" class="ps-2 w-75" attrs="{'required': [('use_subfolders', '=', True), ('id', '!=', False)]}" context="{'documents_project': True, 'default_company_id': company_id}"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2">
+                                <label for="documents_folder_mes" class="fw-bold"/>
+                                <field name="company_id" invisible="1"/>
+                            </div>
+                            <div class="col-4">
+                                <field name="documents_folder_mes" class="ps-2 w-75" attrs="{'required': [('use_subfolders', '=', True), ('id', '!=', False)]}" context="{'documents_project': True, 'default_company_id': company_id}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             </xpath>
         </field>
     </record>
@@ -309,7 +415,7 @@
             </pivot>
         </field>
     </record>
-<!-- TODO -->
+<!--    TODO-->
 <!--    <record id="adquat_view_dashboard_project" model="ir.ui.view">-->
 <!--        <field name="name">adquat.view.dashboard.project</field>-->
 <!--        <field name="model">project.project</field>-->
@@ -349,6 +455,5 @@
         <menuitem action="adquat_sav_action" id="menu_open_all_sav" name="SAV"
                   groups="project.group_project_stages"/>
     </menuitem>
-<!--    TODO-->
 <!--    <menuitem action="adquat_dashboard_project" id="menu_open_dashboard" name="Tableau de Bord" parent="project.menu_main_pm"/>-->
 </odoo>

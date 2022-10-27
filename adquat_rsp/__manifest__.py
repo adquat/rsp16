@@ -25,15 +25,19 @@
                 'report_xlsx',
                 'base_geolocalize',
                 'sms',
+                'documents_project',
     ],
 
     # always loaded
     'data': [
         'data/ir.model.access.csv',
+        'data/project_data.xml',
         'views/mail_template.xml',
-        'views/fdi.xml',
-        'views/sav.xml',
-        'views/project.xml',
+        'views/fdi_view.xml',
+        'views/sav_view.xml',
+        'views/project_view.xml',
+        'views/document_view.xml',
+        'views/partner_view.xml',
         'report/report.xml',
     ],
     'license': 'LGPL-3',

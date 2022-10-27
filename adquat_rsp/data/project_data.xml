@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Project Stages -->
+        <record id="project_project_stage_new" model="project.project.stage">
+            <field name="sequence">1</field>
+            <field name="name">Nouveau</field>
+        </record>
+        <record id="project_project_stage_vt_toplan" model="project.project.stage">
+            <field name="sequence">2</field>
+            <field name="name">VT à planifier</field>
+        </record>
+        <record id="project_project_stage_vt_planned" model="project.project.stage">
+            <field name="sequence">3</field>
+            <field name="name">VT planifiée</field>
+        </record>
+        <record id="project_project_stage_mairie_todo" model="project.project.stage">
+            <field name="sequence">4</field>
+            <field name="name">Mairie à faire</field>
+        </record>
+        <record id="project_project_stage_mairie_done" model="project.project.stage">
+            <field name="sequence">5</field>
+            <field name="name">Mairie faite</field>
+        </record>
+        <record id="project_project_stage_pose_toplan" model="project.project.stage">
+            <field name="sequence">6</field>
+            <field name="name">Pose à planifier</field>
+        </record>
+        <record id="project_project_stage_pose_planned" model="project.project.stage">
+            <field name="sequence">7</field>
+            <field name="name">Pose planifiée</field>
+        </record>
+        <record id="project_project_stage_fdi" model="project.project.stage">
+            <field name="sequence">8</field>
+            <field name="name">FDI</field>
+        </record>
+        <record id="project_project_stage_mes" model="project.project.stage">
+            <field name="sequence">9</field>
+            <field name="name">Mise en service</field>
+        </record>
+        <record id="project_project_stage_sav" model="project.project.stage">
+            <field name="sequence">10</field>
+            <field name="name">SAV</field>
+        </record>
+        <record id="project_project_stage_done" model="project.project.stage">
+            <field name="sequence">11</field>
+            <field name="name">Clôturé</field>
+            <field name="fold" eval="True"/>
+        </record>
+        <record id="project_project_stage_cancelled" model="project.project.stage">
+            <field name="sequence">12</field>
+            <field name="name">Annulé</field>
+            <field name="fold" eval="True"/>
+        </record>
+
+        <!-- PARTNER CATEGORY -->
+        <record id="res_partner_category_customer" model="res.partner.category">
+            <field name="name">Client</field>
+            <field name="color" eval="11"/>
+        </record>
+        <record id="res_partner_category_import" model="res.partner.category">
+            <field name="name">Import</field>
+        </record>
+        <record id="res_partner_category_encours" model="res.partner.category">
+            <field name="name">Affaire en cours</field>
+            <field name="parent_id" ref="res_partner_category_import"/>
+            <field name="color" eval="6"/>
+        </record>
+        <record id="res_partner_category_historique" model="res.partner.category">
+            <field name="name">Historique</field>
+            <field name="parent_id" ref="res_partner_category_import"/>
+            <field name="color" eval="4"/>
+        </record>
+
+        <!-- DEPARTMENT -->
+        <record id="hr_department_tech" model="hr.department">
+            <field name="name">Technique</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="action_view_documents_project_project" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="res_model">documents.document</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('res_model', '=', 'project.project'), ('res_id', '=', active_id)]</field>
+        <field name="context">{'default_res_model': 'project.project', 'default_res_id': active_id, 'limit_folders_to_project': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Upload <span class="fw-normal">a file or </span>drag <span class="fw-normal">it here.</span>
+            </p>
+        </field>
+    </record>
+</odoo>

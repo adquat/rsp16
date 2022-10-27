@@ -8,22 +8,37 @@ from odoo.modules.module import get_module_resource
 import io
 import json
 import base64
-
-class ResPartner(models.Model):
-    _inherit = 'res.partner'
-
-    date_birth_partner = fields.Date('Date de Naissance')
-
 class ProjectProject(models.Model):
     _name = 'project.project'
     _inherit = ['mail.thread.phone', 'project.project']
+    def _get_document_partner(self):
+        return self.partner_id
     def _phone_get_number_fields(self):
         """ This method returns the fields to use to find the number to use to
         send an SMS on a record. """
         return ['phone_partner']
 
+    #HERITAGE
+    partner_id = fields.Many2one('res.partner', string='Customer', auto_join=True, tracking=True, required=True,
+                                 domain=lambda self: [('category_id', 'in', self.env.ref('adquat_rsp.res_partner_category_customer').id),
+                                                      '|', ('company_id', '=', False), ('company_id', '=', self.env.company)])
+
 ## Infos client: Onglet fiche client
-    name_partner = fields.Char(string="Nom Client", related='partner_id.name')
+    @api.depends('partner_id', 'partner_id.name')
+    def _compute_partner_name(self):
+        for project in self:
+            partner_name = project.partner_id and project.partner_id.name or ''
+            if partner_name:
+                split = partner_name.split(' ')
+                if len(split) > 1:
+                    project.name_partner = split[-1]
+                    project.prenom_partner = split[0]
+                else:
+                    project.name_partner = partner_name
+                    project.prenom_partner = ''
+
+    name_partner = fields.Char(string="Nom", compute='_compute_partner_name', store=True)
+    prenom_partner = fields.Char(string="Prénom", compute='_compute_partner_name', store=True)
     birth_partner = fields.Date(string="Date de Naissance", related='partner_id.date_birth_partner')
     street = fields.Char(related='partner_id.street')
     street2 = fields.Char(related='partner_id.street2')
@@ -34,9 +49,12 @@ class ProjectProject(models.Model):
     country_id = fields.Many2one('res.country', string='Country', ondelete='restrict', related='partner_id.country_id')
     country_code = fields.Char(related='country_id.code', string="Country Code")
     phone_partner = fields.Char(string="Téléphone", related="partner_id.phone")
+    mobile_partner = fields.Char(string="Mobile", related="partner_id.mobile")
     mail_partner = fields.Char(string="Adresse Mail", related="partner_id.email")
     time = fields.Char("Temps de Route")
-    parrainage = fields.Many2one('res.partner', string="Parrainage")
+    parrainage = fields.Many2one('res.partner', string="Parrainage",
+                                 domain=lambda self: [('category_id', 'in', self.env.ref('adquat_rsp.res_partner_category_customer').id),
+                                '|', ('company_id', '=', False), ('company_id', '=', self.env.company)])
 
     @api.onchange('partner_id')
     def _onchange_address(self):
@@ -77,10 +95,10 @@ class ProjectProject(models.Model):
 
     @api.onchange('name_partner', 'birth_partner', 'address_partner', 'phone_partner', 'mail_partner', 'time', 'parrainage',
     'existing_power', 'rv_or_auto', 'crae', 'bta', 'msb', 'dossier_complet', 'gestion_surplus', 'amount_ht', 'date_signature',
-    'power_choose', 'user_id', 'tech_ids')
+    'power_choose', 'user_ids', 'tech_ids')
     def onchange_stage_id(self):
         for project in self:
-            if project.name_partner and project.birth_partner and project.street and project.city and project.zip and project.phone_partner and project.mail_partner and project.time and project.rv_or_auto and project.dossier_complet and project.gestion_surplus and project.amount_ht and project.date_signature and project.power_choose and project.user_id and project.tech_ids and project.stage_id.id == 1:
+            if project.name_partner and project.birth_partner and project.street and project.city and project.zip and project.phone_partner and project.mail_partner and project.time and project.rv_or_auto and project.dossier_complet and project.gestion_surplus and project.amount_ht and project.date_signature and project.power_choose and project.user_ids and project.tech_ids and project.stage_id.id == 1:
                 if project.gestion_surplus == 'msb' and project.existing_power and project.crae and project.bta and project.msb:
                     project.stage_id = self.env.ref('project.project_project_stage_1').id
                 elif project.gestion_surplus == 'msb' and not project.existing_power and project.msb:
@@ -103,31 +121,36 @@ class ProjectProject(models.Model):
                 project.dossier_complet = True
             else:
                 project.dossier_complet = False
-
-
+    @api.depends('amount_ht', 'prct_commission')
+    def _compute_commission(self):
+        for project in self:
+            if project.prct_commission:
+                project.amount_commission = project.amount_ht * project.prct_commission
+            else:
+                project.amount_commission = 0.0
 
 ## Champ hors onglet
     gestion_surplus = fields.Selection([
         ('oa', 'OA'),
         ('msb', 'MSB'),
         ('other', 'Autres')
-    ], string="Gestion Surplus")
+    ], string="Gestion Surplus", default='oa', required=True)
     currency_id = fields.Many2one('res.currency', related='company_id.currency_id')
     amount_ht = fields.Monetary("Montant HT", group_operator="sum")
-    amount_commission = fields.Monetary("Montant Commission", group_operator="sum")
+    prct_commission = fields.Float("Commission",default=0.1)
+    amount_commission = fields.Monetary("Montant Commission", compute="_compute_commission", group_operator="sum", store=True)
     date_signature = fields.Date("Date Signature Commande")
     power_choose = fields.Float("Puissance Choisie")
     date_vt = fields.Datetime("Date et heure VT")
     date_mairie = fields.Date("Date accord mairie")
     date_install = fields.Date("Date d'installation")
     #techs_name = fields.Char("Nom des techs")
-    tech_ids = fields.Many2many('hr.employee', string="Techniciens")
+    tech_ids = fields.Many2many('hr.employee', 'project_tech_ids', string="Techniciens",
+                                domain=lambda self: [('department_id', '=', self.env.ref('adquat_rsp.hr_department_tech').id)])
+    user_ids = fields.Many2many('hr.employee', 'project_user_ids', string="Commerciaux",
+                                domain=lambda self: [('department_id', '=', self.env.ref('hr.dep_sales').id)])
     date_mise_service_enedis = fields.Date('Date de mise en service Enedis')
 
-    @api.onchange('amount_ht')
-    def _onchange_amount_commission(self):
-        if self.amount_ht:
-            self.amount_commission = self.amount_ht * 0.1
 
 ## fichier et infos onglet VT
     tech_id = fields.Many2one('hr.employee', string='Technicien')
@@ -460,6 +483,105 @@ class ProjectProject(models.Model):
 
         self.xls_vt_filename = 'Visite Technique %s %s.xlsx' % (self.partner_id.name, self.name)
 
+    #DOCUMENTS
+    use_subfolders = fields.Boolean("Création d'un sous-dossier par onglet", default=True,
+                                   help='Crée un sous-dossier par onglet afin de faciliter le classement')
+    documents_folder_fiche = fields.Many2one('documents.folder', string="Fiche Client",
+                                          domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+                                          copy=False)
+    documents_folder_vt = fields.Many2one('documents.folder', string="Visite Technique",
+                                             domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+                                             copy=False)
+    documents_folder_mairie = fields.Many2one('documents.folder', string="Mairie",
+                                             domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+                                             copy=False)
+    documents_folder_pose = fields.Many2one('documents.folder', string="Pose",
+                                             domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+                                             copy=False)
+    documents_folder_fdi = fields.Many2one('documents.folder', string="FDI",
+                                             domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+                                             copy=False)
+    documents_folder_mes = fields.Many2one('documents.folder', string="Mise en Service",
+                                             domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+                                             copy=False)
+    documents_folder_sav = fields.Many2one('documents.folder', string="SAV",
+                                             domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+                                             copy=False)
+
+    def _get_document_folder(self):
+        return self.documents_folder_id
+    def _get_subfolders_info(self):
+        return {(0, 'Fiche Client'): {'folder_field':'documents_folder_fiche',
+                    'fields':['devis_and_chq','cgv','taxes_foncieres','fact_elec','mandat_mairie','mandat_enedis']},
+                (1, 'Visite Technique'): {'folder_field':'documents_folder_vt',
+                    'fields':['file_to_join','pic_to_join']},
+                (2, 'Mairie'): {'folder_field':'documents_folder_mairie',
+                    'fields':['mairie_answer_to_join','recepisse_to_join','other_attachments_to_join','abf_to_join','rsp_to_join']},
+                (3, 'Pose'): {'folder_field':'documents_folder_pose',
+                    'fields':['aft','picture','calepinage_emphase','implantation_emphase','quotation_alaska','invoice_alaska','invoice_finalRsp']},
+                (4, 'FDI'): {'folder_field':'documents_folder_fdi',
+                    'fields':[]},
+                (5, 'Mise en Service'): {'folder_field':'documents_folder_mes',
+                    'fields':['synthese','pdf_consuel','fileTech_and_schema']},
+                (6, 'SAV'): {'folder_field':'documents_folder_sav',
+                    'fields':[]},
+        }
+    @api.model_create_multi
+    def create(self, vals_list):
+        projects = super(ProjectProject,self).create(vals_list)
+        if not self.env.context.get('no_create_folder'):
+            projects.filtered(lambda project: project.use_documents)._create_missing_subfolders()
+        return projects
+    def write(self, vals):
+        res = super(ProjectProject,self).write(vals)
+        if vals.get('use_documents'):
+            self._create_missing_subfolders()
+        if vals.get('name'):
+            for project in self.filtered(lambda p: p.documents_folder_id):
+                project.documents_folder_id.name = vals['name']
+
+        TAB_DIC = self._get_subfolders_info()
+        for project in self:
+            for field_info in TAB_DIC.values():
+                folder_to_change = list(set(field_info['fields']) & set(vals))
+                new_subfolder_field = field_info['folder_field']
+                for field_tmp in folder_to_change:
+                    attachment = project[field_tmp]
+                    #LA ON CHERCHER LE DOCUMENT DE LA PJ POUR MODIFIER
+                    document = self.env['documents.document'].search([('attachment_id', '=',attachment.id)])
+                    new_subfolder = project[new_subfolder_field]
+                    if document and new_subfolder:
+                        document.folder_id = new_subfolder.id
+        return res
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        project = super(ProjectProject).copy(default)
+        if not self.env.context.get('no_create_folder') and project.use_subfolders and self.documents_folder_id:
+            project.documents_folder_fiche = self.documents_folder_fiche.copy({'name': project.name})
+            project.documents_folder_vt = self.documents_folder_vt.copy({'name': project.name})
+            project.documents_folder_mairie = self.documents_folder_mairie.copy({'name': project.name})
+            project.documents_folder_pose = self.documents_folder_pose.copy({'name': project.name})
+            project.documents_folder_sav = self.documents_folder_sav.copy({'name': project.name})
+            project.documents_folder_fdi = self.documents_folder_fdi.copy({'name': project.name})
+            project.documents_folder_mes = self.documents_folder_mes.copy({'name': project.name})
+        return project
+    def _create_missing_subfolders(self):
+        TAB_DIC = self._get_subfolders_info()
+        for project in self:
+            created_folders = []
+            if project.use_subfolders and project.documents_folder_id:
+                for (seq, tab), field_info in TAB_DIC.items():
+                    field = field_info.get('folder_field',False)
+                    if field and not project[field]:
+                        folder_vals = {
+                            'sequence':seq,
+                            'name': tab,
+                            'parent_folder_id': project.documents_folder_id.id,
+                            'company_id': project.company_id.id,
+                        }
+                        project[field] = self.env['documents.folder'].create(folder_vals)
+
+        return True
 
 class Fdi(models.Model):
     _name = 'fdi.object'
@@ -530,4 +652,3 @@ class Sav(models.Model):
         self.create({
             'project_id': self.project_id.id
         })
-
