@@ -22,7 +22,7 @@
     'depends': ['base',
                 'project',
                 'hr',
-                'report_xlsx',
+                # 'report_xlsx',
                 'base_geolocalize',
                 'sms',
                 'documents_project',
@@ -30,13 +30,13 @@
 
     # always loaded
     'data': [
-        'data/ir.model.access.csv',
         'data/project_data.xml',
+        'data/ir.model.access.csv',
         'views/mail_template.xml',
         'views/fdi_view.xml',
         'views/sav_view.xml',
-        'views/project_view.xml',
         'views/document_view.xml',
+        'views/project_view.xml',
         'views/partner_view.xml',
         'report/report.xml',
     ],

@@ -2,8 +2,11 @@ from datetime import date
 
 from odoo import api, fields, models
 from odoo.tools import date_utils
-from odoo.tools.misc import xlsxwriter
+from openpyxl import load_workbook, Workbook
 from odoo.modules.module import get_module_resource
+from io import BytesIO
+from openpyxl.writer.excel import save_virtual_workbook
+import base64
 
 import io
 import json
@@ -93,34 +96,31 @@ class ProjectProject(models.Model):
     domofinance = fields.Boolean('Domofinance', default=False)
     dossier_complet = fields.Boolean('Dossier Complet', default=False, compute="_compute_dossier_complet", readonly=True)
 
-    @api.onchange('name_partner', 'birth_partner', 'address_partner', 'phone_partner', 'mail_partner', 'time', 'parrainage',
-    'existing_power', 'rv_or_auto', 'crae', 'bta', 'msb', 'dossier_complet', 'gestion_surplus', 'amount_ht', 'date_signature',
-    'power_choose', 'user_ids', 'tech_ids')
-    def onchange_stage_id(self):
-        for project in self:
-            if project.name_partner and project.birth_partner and project.street and project.city and project.zip and project.phone_partner and project.mail_partner and project.time and project.rv_or_auto and project.dossier_complet and project.gestion_surplus and project.amount_ht and project.date_signature and project.power_choose and project.user_ids and project.tech_ids and project.stage_id.id == 1:
-                if project.gestion_surplus == 'msb' and project.existing_power and project.crae and project.bta and project.msb:
-                    project.stage_id = self.env.ref('project.project_project_stage_1').id
-                elif project.gestion_surplus == 'msb' and not project.existing_power and project.msb:
-                    project.stage_id = self.env.ref('project.project_project_stage_1').id
-                elif project.gestion_surplus != 'msb' and project.existing_power and project.crae and project.bta:
-                    project.stage_id = self.env.ref('project.project_project_stage_1').id
-                elif project.gestion_surplus != 'msb' and not project.existing_power:
-                    project.stage_id = self.env.ref('project.project_project_stage_1').id
-                else:
-                    pass
-            else:
-                pass
-
-    @api.depends('devis_and_chq', 'cgv', 'taxes_foncieres', 'fact_elec', 'mandat_mairie', 'mandat_OA', 'gestion_surplus', 'mandat_enedis')
+    @api.depends('name_partner', 'prenom_partner', 'birth_partner', 'street', 'city', 'zip', 'country_id', 'phone_partner',
+                 'mobile_partner', 'mail_partner', 'devis_and_chq', 'cgv', 'taxes_foncieres', 'fact_elec', 'mandat_mairie',
+                 'mandat_OA', 'gestion_surplus', 'mandat_enedis', 'amount_ht', 'date_signature', 'power_choose', 'user_ids')
     def _compute_dossier_complet(self):
         for project in self:
-            if project.gestion_surplus == 'oa' and project.devis_and_chq and project.taxes_foncieres and project.cgv and project.fact_elec and project.mandat_mairie and project.mandat_OA and project.mandat_enedis:
-                project.dossier_complet = True
-            elif project.gestion_surplus != 'oa' and project.devis_and_chq and project.taxes_foncieres and project.cgv and project.fact_elec and project.mandat_mairie and project.mandat_enedis:
-                project.dossier_complet = True
+            project.dossier_complet = False
+            #COORDONNEES
+            coordonnees_complete = project.name_partner and project.prenom_partner and project.birth_partner \
+                                   and project.street and project.city and project.zip and project.country_id \
+                                   and (project.phone_partner or project.mobile_partner) and project.mail_partner
+            #PJs
+            pjs_standard = project.devis_and_chq and project.taxes_foncieres and project.cgv and project.fact_elec \
+                           and project.mandat_mairie and project.mandat_enedis and project.amount_ht \
+                           and project.date_signature and project.power_choose and project.user_ids
+            #CHECK
+            if coordonnees_complete and pjs_standard:
+                if project.gestion_surplus == 'oa' and project.mandat_OA:
+                    project.dossier_complet = True
+                elif project.gestion_surplus != 'oa':
+                    project.dossier_complet = True
+            if project.dossier_complet:
+                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_vt_toplan')
             else:
-                project.dossier_complet = False
+                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_new')
+
     @api.depends('amount_ht', 'prct_commission')
     def _compute_commission(self):
         for project in self:
@@ -153,18 +153,21 @@ class ProjectProject(models.Model):
 
 
 ## fichier et infos onglet VT
-    tech_id = fields.Many2one('hr.employee', string='Technicien')
+    tech_id = fields.Many2one('hr.employee', string='Technicien VT')
     file_to_join = fields.Many2many('ir.attachment', 'ir_attachment_file_join', string='Fichiers à joindre')
     pic_to_join = fields.Many2many('ir.attachment', 'ir_attachment_pic_join', string='Photos à joindre')
+    vt_file = fields.Many2one('ir.attachment', string='Fiche Technique générée', copy=False)
+    vt_filed = fields.Many2many('ir.attachment', 'ir_attachment_project_vt', string='Fiche technique remplie')
+    # vt_filename = fields.Char("VT Filename")
 
     @api.onchange('tech_id', 'file_to_join', 'pic_to_join', 'date_vt')
     def _on_change_stage_id_vt(self):
         for project in self:
             if project.date_vt:
-                if project.file_to_join and project.pic_to_join and project.tech_id and project.stage_id.id == self.env.ref('project.project_project_stage_2').id:
-                    project.stage_id = self.env.ref('project.project_project_stage_3').id
+                if project.file_to_join and project.pic_to_join and project.tech_id and project.stage_id.id == self.env.ref('project.project_project_stage_vt_planned').id:
+                    project.stage_id = self.env.ref('project.project_project_stage_mairie').id
                 else:
-                    project.stage_id = self.env.ref('project.project_project_stage_2').id
+                    project.stage_id = self.env.ref('project.project_project_stage_vt_planned').id
             else:
                 pass
 
@@ -441,48 +444,52 @@ class ProjectProject(models.Model):
     nb_fdi_to_planif = fields.Integer('FDI à planifier', default=0)
     nb_fdi_finish = fields.Integer('FDI finies', default=0)
     nb_project_finish = fields.Integer('Dossiers clôturés', default=0)
-    xls_vt_file = fields.Binary(string="VT XLS")
-    xls_vt_filename = fields.Char()
-
-    # def excel_vt(self):
-    #     data = {}
-    #     return {'type': 'ir.actions.report', 'report_type': 'XLSX',
-    #             'data': {'model': 'project.project', 'output_format': 'XLSX',
-    #                      'options': json.dumps(data, default=date_utils.json_default),
-    #                      'report_name': 'Visite Technique %s %s' % (self.partner_id.name, self.name), }, }
-    # def test_xlsx_success(self):
-    #     xlsx_file_path = get_module_resource('adquat_rsp', 'static/excel', 'document_vt.xlsx')
-    #     file_content = open(xlsx_file_path, 'rb').read()
-    #     import_wizard = self.env['base_import.import'].create({
-    #         'res_model': 'base_import.tests.models.preview',
-    #         'file': file_content,
-    #         'file_type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    #     })
-    #
-    #     result = import_wizard.parse_preview({
-    #         'has_headers': True,
-    #     })
-    #     import pdb; pdb.set_trace()
 
     def action_generate_xls(self):
-        output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        worksheet = workbook.add_worksheet('Exemption Details')
-        style_highlight = workbook.add_format({'bold': True, 'pattern': 1, 'bg_color': '#E0E0E0', 'align': 'center'})
-        style_normal = workbook.add_format({'align': 'center'})
-        row = 0
-        workbook.close()
-        xlsx_data = output.getvalue()
-        #self.xls_file = base64.encodebytes(xlsx_data)
-        document_vt = self.env['ir.attachment'].search([('name', '=', 'document_vt')],limit=1)
+        self.ensure_one()
+        xlsx_file_path = get_module_resource('adquat_rsp', 'report', 'document_vt.xlsx')
+        workbook = load_workbook(xlsx_file_path)
+        user_date_format = self.env['res.lang']._lang_get(self.env.user.lang).date_format
+        ws = workbook.active
 
-        xlsxwriter.Workbook()
-        #ENREGISTRER EN PJ
-        if document_vt:
-            self.xls_vt_file = document_vt.datas
+        if self.date_vt:
+            ws.cell(3, 3).value = self.date_vt.strftime(user_date_format)
+        if self.tech_id:
+            ws.cell(3, 6).value = self.tech_id.name
+        if self.name_partner:
+            ws.cell(6, 3).value = self.name_partner
+        if self.prenom_partner:
+            ws.cell(6, 6).value = self.prenom_partner
 
-        self.xls_vt_filename = 'Visite Technique %s %s.xlsx' % (self.partner_id.name, self.name)
-
+        ws.cell(7, 3).value = (self.street or '') + (self.street2 and '\n' + self.street2 or '')
+        ws.cell(7, 6).value = self.birth_partner
+        ws.cell(8, 3).value = self.phone_partner
+        ws.cell(8, 6).value = self.mail_partner
+        ws.cell(9, 3).value = self.partner_id and self.partner_id.mobile or ''
+        file_data = BytesIO(save_virtual_workbook(workbook))
+        file_data.seek(0)
+        file_data = base64.encodebytes(file_data.read())
+        if file_data:
+            if self.vt_file:
+                self.vt_file.write({'datas':file_data})
+                vt = self.vt_file
+            else:
+                vt = self.env['ir.attachment'].create({
+                    'name': 'Visite Technique %s %s.xls' % (self.partner_id.name, self.name),
+                    'datas': file_data,
+                    'type': 'binary',
+                    'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'res_id': self.id,
+                    'res_model':'project.project',
+                })
+            if vt:
+                base_url = self.env['ir.config_parameter'].get_param('web.base.url')
+                download_url = '/web/content/' + str(vt.id) + '?download=true'
+                return {
+                    "type": "ir.actions.act_url",
+                    "url": str(base_url) + str(download_url),
+                    "target": "new",
+                }
     #DOCUMENTS
     use_subfolders = fields.Boolean("Création d'un sous-dossier par onglet", default=True,
                                    help='Crée un sous-dossier par onglet afin de faciliter le classement')
@@ -514,7 +521,7 @@ class ProjectProject(models.Model):
         return {(0, 'Fiche Client'): {'folder_field':'documents_folder_fiche',
                     'fields':['devis_and_chq','cgv','taxes_foncieres','fact_elec','mandat_mairie','mandat_enedis']},
                 (1, 'Visite Technique'): {'folder_field':'documents_folder_vt',
-                    'fields':['file_to_join','pic_to_join']},
+                    'fields':['file_to_join','pic_to_join','vt_filed']},
                 (2, 'Mairie'): {'folder_field':'documents_folder_mairie',
                     'fields':['mairie_answer_to_join','recepisse_to_join','other_attachments_to_join','abf_to_join','rsp_to_join']},
                 (3, 'Pose'): {'folder_field':'documents_folder_pose',
@@ -579,7 +586,9 @@ class ProjectProject(models.Model):
                             'parent_folder_id': project.documents_folder_id.id,
                             'company_id': project.company_id.id,
                         }
-                        project[field] = self.env['documents.folder'].create(folder_vals)
+                        new_sub_id = self.env['documents.folder'].create(folder_vals)
+                        if new_sub_id:
+                            self.write({field:new_sub_id})
 
         return True
 
