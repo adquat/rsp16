@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data>
+    <!-- TODO A MODIFIER PLUS TARD LE NOUPDATE -->
        <record id="mail_auto_vt" model="mail.template">
            <field name="name">Mail confirmation rdv VT</field>
            <field name="model_id" ref="project.model_project_project"/>
            <field name="partner_to">{{ object.partner_id.id }}</field>
+           <field name="email_from">admin@rhonesolairepro.fr</field>
            <field name="email_to">{{ object.partner_id.email }}</field>
            <field name="subject">Confirmation de rdv visite technique</field>
            <field name="body_html" type="html">
@@ -27,6 +29,7 @@
             <field name="name">Mail confirmation installation solaire</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation installation solaire</field>
             <field name="body_html" type="html">
@@ -49,6 +52,7 @@
             <field name="name">Mail confirmation fin d'installation solaire</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation fin d'installation solaire</field>
             <field name="body_html" type="html">
@@ -69,6 +73,7 @@
             <field name="name">Mail confirmation SAV</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_to }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation SAV</field>
             <field name="body_html" type="html">
@@ -90,6 +95,7 @@
             <field name="name">Mail confirmation de la DP à la mairie</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation envoi de la DP à la mairie</field>
             <field name="body_html" type="html">
@@ -111,6 +117,7 @@
             <field name="name">Mail confirmation accord mairie</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation accord mairie</field>
             <field name="body_html" type="html">
@@ -132,6 +139,7 @@
             <field name="name">Mail fin d’installation pour souscription Mylight batterie virtuelle (MSB)</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Souscription MyLight batterie virtuelle (MSB)</field>
             <field name="body_html" type="html">
@@ -156,6 +164,7 @@
             <field name="name">Mail confirmation envoi synthèse Enedis</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation envoi synthèse Enedis</field>
             <field name="body_html" type="html">
@@ -176,6 +185,7 @@
             <field name="name">Mail confirmation envoi attestation Consuel quand MSB</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation envoi attestation Consuel</field>
             <field name="body_html" type="html">
@@ -198,6 +208,7 @@
             <field name="name">Mail confirmation envoi attestation Consuel quand OA</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation envoi attestation Consuel</field>
             <field name="body_html" type="html">
@@ -222,6 +233,7 @@
             <field name="name">Mail satisfaction client et avis google</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Avis google et satisfaction</field>
             <field name="body_html" type="html">

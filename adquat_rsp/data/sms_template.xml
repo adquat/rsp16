@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- TODO A MODIFIER PLUS TARD LE NOUPDATE -->
+        <!-- SMS -->
+        <record id="sms_template_data_conf_vt" model="sms.template">
+            <field name="name">SMS confirmation rdv visite technique</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="body">Bonjour {{ object.partner_id.name }},
+                Je vous confirme votre rendez-vous avec notre technicien pour votre visite technique le : {{ format_datetime(object.date_vt, tz=object.partner_id.tz, lang_code=object.partner_id.lang) if object.date_vt else '' }}
+            Cette visite dure 1 heure.
+            Cordialement,
+            RHONE SOLAIRE PRO</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+        </record>
+
+        <record id="sms_template_data_pose" model="sms.template">
+            <field name="name">SMS confirmation installation solaire</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="body">Bonjour {{ object.partner_id.name }},
+                Je vous confirme que votre installation solaire aura lieu sur 1 et/ou 2 jours le et/ou les : {{ format_datetime(object.date_install, tz=object.partner_id.tz, lang_code=object.partner_id.lang) if object.date_install else '' }}
+            Les techniciens arriveront entre 08 et 09 h, ils vous contactent avant d’arriver.
+            Cordialement,
+            RHONE SOLAIRE PRO</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+        </record>
+
+        <record id="sms_template_data_fdi" model="sms.template">
+            <field name="name">SMS confirmation fin d’installation solaire (FDI)</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="body">Bonjour {{ object.partner_id.name }},
+                Je vous confirme que votre fin d’installation solaire aura lieu le : {{ format_datetime(object.date_fdi, tz=object.partner_id.tz, lang_code=object.partner_id.lang) if object.date_fdi else '' }}
+            Cordialement,
+            RHONE SOLAIRE PRO</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+        </record>
+
+        <record id="sms_template_data_sav" model="sms.template">
+            <field name="name">SMS confirmation SAV</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="body">Bonjour {{ object.partner_id.name }},
+                Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le : {{ format_datetime(object.date_sav, tz=object.partner_id.tz, lang_code=object.partner_id.lang) if object.date_sav else '' }}
+            Cordialement,
+            RHONE SOLAIRE PRO</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+        </record>
+    </data>
+</odoo>

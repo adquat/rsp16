@@ -164,20 +164,21 @@ class ProjectProject(models.Model):
     def _on_change_stage_id_vt(self):
         for project in self:
             if project.date_vt:
-                if project.file_to_join and project.pic_to_join and project.tech_id and project.stage_id.id == self.env.ref('project.project_project_stage_vt_planned').id:
-                    project.stage_id = self.env.ref('project.project_project_stage_mairie').id
+                if project.file_to_join and project.pic_to_join and project.tech_id and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_vt_planned').id:
+                    project.stage_id = self.env.ref('adquat_rsp.project_project_stage_mairie').id
                 else:
-                    project.stage_id = self.env.ref('project.project_project_stage_vt_planned').id
+                    project.stage_id = self.env.ref('adquat_rsp.project_project_stage_vt_planned').id
             else:
                 pass
 
 ## fichiers et infos onglet Mairie
     done = fields.Boolean('Faite / Pas Faite')
-    sending_date_mairie = fields.Date('Date d\'envoi mairie')
+    sending_date_mairie = fields.Date('Date d\'envoi ')
+    mairie_answer_date = fields.Date('Date de réponse')
     mairie_answer = fields.Selection([
         ('yes', 'Accord'),
         ('no', 'Refus')
-    ], string="Réponse mairie")
+    ], string="Réponse")
     mairie_answer_to_join = fields.Many2many('ir.attachment', 'ir_attachment_mairie_answer', string='Accord/Refus à importer')
     recepisse_to_join = fields.Many2many('ir.attachment', 'ir_attachment_recepisse', string='Récépissé fichier')
     other_attachments_to_join = fields.Many2many('ir.attachment', 'ir_attachment_other', string='Pièces complémentaires')
@@ -189,15 +190,18 @@ class ProjectProject(models.Model):
         for project in self:
             if project.sending_date_mairie:
                 project.done = True
-                project.stage_id = self.env.ref('project.project_project_stage_4').id
+                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_mairie_todo').id
             else:
                 project.done = False
 
     @api.onchange('mairie_answer', 'mairie_answer_to_join', 'rsp_to_join')
     def _onchange_stage_id_mairie(self):
         for project in self:
-            if ((project.mairie_answer == 'yes' and project.mairie_answer_to_join) or project.rsp_to_join) and project.stage_id.id == self.env.ref('project.project_project_stage_4').id:
-                project.stage_id = self.env.ref('project.project_project_stage_5').id
+            if ((project.mairie_answer == 'yes' and project.mairie_answer_to_join) or project.rsp_to_join) and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_mairie_todo').id:
+                import pdb;
+                pdb.set_trace()
+                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id
+                project.mairie_answer_date = fields.Date.today()
             else:
                 pass
     def action_fsm_navigate(self):
@@ -219,11 +223,11 @@ class ProjectProject(models.Model):
     return_caution = fields.Boolean('Retour chq Caution', default=False)
     aft = fields.Many2many('ir.attachment', 'ir_attachment_aft', string='AFT')
     picture = fields.Many2many('ir.attachment', 'ir_attachment_picture', string='Photos')
-    calepinage_emphase = fields.Many2many('ir.attachment', 'ir_attachment_calepinage', string='Calepinage Emphase')
-    implantation_emphase = fields.Many2many('ir.attachment', 'ir_attachment_implantation', string='Implantation Emphase')
+    calepinage_emphase = fields.Many2many('ir.attachment', 'ir_attachment_calepinage', string='Calepinage Enphase')
+    implantation_emphase = fields.Many2many('ir.attachment', 'ir_attachment_implantation', string='Rapport Enphase')
     quotation_alaska = fields.Many2many('ir.attachment', 'ir_attachment_quot_alaska', string='Devis Alaska')
     invoice_alaska = fields.Many2many('ir.attachment', 'ir_attachment_inv_alaska', string='Facture alaska')
-    invoice_finalRsp = fields.Many2many('ir.attachment', 'ir_attachment_inv_rsp', string='Facture final RSP client')
+    invoice_finalRsp = fields.Many2many('ir.attachment', 'ir_attachment_inv_rsp', string='Facture finale RSP client')
     all_file_is_good = fields.Boolean(default=False)
     has_complete_partner_address = fields.Boolean(compute='_compute_has_complete_partner_address')
 
@@ -238,19 +242,19 @@ class ProjectProject(models.Model):
     @api.onchange('date_install')
     def _onchange_stage_id(self):
         for project in self:
-            if project.date_install and project.stage_id.id == self.env.ref('project.project_project_stage_5').id:
-                project.stage_id = self.env.ref('project.project_project_stage_6').id
+            if project.date_install and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id:
+                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_planned').id
             else:
                 pass
 
     def finish_pose(self):
-        self.stage_id = self.env.ref('project.project_project_stage_8').id
+        self.stage_id = self.env.ref('adquat_rsp.project_project_stage_mes').id
 
     def create_fdi(self):
         self.env['fdi.object'].create({
             'project_id': self.id,
         })
-        self.stage_id = self.env.ref('project.project_project_stage_7').id
+        self.stage_id = self.env.ref('adquat_rsp.project_project_stage_fdi').id
 
 ## Infos FDI
     date_fdi = fields.Datetime('Date FDI', compute="_compute_date_fdi")
@@ -352,13 +356,13 @@ class ProjectProject(models.Model):
             self.enedis_done = False
 
     def finish_project(self):
-        self.stage_id = self.env.ref('project.project_project_stage_10').id
+        self.stage_id = self.env.ref('adquat_rsp.project_project_stage_done').id
 
     def create_sav(self):
         self.env['sav.object'].create({
             'project_id': self.id,
         })
-        self.stage_id = self.env.ref('project.project_project_stage_9').id
+        self.stage_id = self.env.ref('adquat_rsp.project_project_stage_sav').id
 
     # Consuel
     shipping_number = fields.Char('Numéro d\'envoi')
@@ -612,7 +616,7 @@ class Fdi(models.Model):
             self.state = 'planif'
 
     def yes_finish(self):
-        self.project_id.stage_id = self.env.ref('project.project_project_stage_8').id
+        self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_mes').id
         self.state = 'finish'
 
     def no_finish(self):
@@ -650,11 +654,11 @@ class Sav(models.Model):
 
     def mise_en_service(self):
         self.state = 'finish'
-        self.project_id.stage_id = self.env.ref('project.project_project_stage_8').id
+        self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_mes').id
 
     def close_project(self):
         self.state = 'finish'
-        self.project_id.stage_id = self.env.ref('project.project_project_stage_10').id
+        self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_done').id
 
     def no_finish_sav(self):
         self.state = 'no'

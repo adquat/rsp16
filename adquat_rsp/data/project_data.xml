@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
+        <!-- TODO A MODIFIER PLUS TARD LE NOUPDATE -->
         <!-- Project Stages -->
         <record id="project_project_stage_new" model="project.project.stage">
             <field name="sequence">1</field>
@@ -13,6 +14,8 @@
         <record id="project_project_stage_vt_planned" model="project.project.stage">
             <field name="sequence">3</field>
             <field name="name">VT planifiée</field>
+            <field name="mail_template_id" ref="adquat_rsp.mail_auto_vt"/>
+            <field name="sms_template_id" ref="adquat_rsp.sms_template_data_conf_vt"/>
         </record>
         <record id="project_project_stage_mairie_todo" model="project.project.stage">
             <field name="sequence">4</field>
@@ -21,6 +24,7 @@
         <record id="project_project_stage_mairie_done" model="project.project.stage">
             <field name="sequence">5</field>
             <field name="name">Mairie faite</field>
+            <field name="mail_template_id" ref="adquat_rsp.mail_auto_dp_mairie"/>
         </record>
         <record id="project_project_stage_pose_toplan" model="project.project.stage">
             <field name="sequence">6</field>
@@ -29,10 +33,14 @@
         <record id="project_project_stage_pose_planned" model="project.project.stage">
             <field name="sequence">7</field>
             <field name="name">Pose planifiée</field>
+            <field name="mail_template_id" ref="adquat_rsp.mail_auto_install"/>
+            <field name="sms_template_id" ref="adquat_rsp.sms_template_data_pose"/>
         </record>
         <record id="project_project_stage_fdi" model="project.project.stage">
             <field name="sequence">8</field>
             <field name="name">FDI</field>
+            <field name="mail_template_id" ref="adquat_rsp.mail_auto_end_install"/>
+            <field name="sms_template_id" ref="adquat_rsp.sms_template_data_fdi"/>
         </record>
         <record id="project_project_stage_mes" model="project.project.stage">
             <field name="sequence">9</field>
@@ -41,11 +49,14 @@
         <record id="project_project_stage_sav" model="project.project.stage">
             <field name="sequence">10</field>
             <field name="name">SAV</field>
+            <field name="mail_template_id" ref="adquat_rsp.mail_auto_sav"/>
+            <field name="sms_template_id" ref="adquat_rsp.sms_template_data_sav"/>
         </record>
         <record id="project_project_stage_done" model="project.project.stage">
             <field name="sequence">11</field>
             <field name="name">Clôturé</field>
             <field name="fold" eval="True"/>
+            <field name="mail_template_id" ref="adquat_rsp.mail_auto_satisfaction_client"/>
         </record>
         <record id="project_project_stage_cancelled" model="project.project.stage">
             <field name="sequence">12</field>

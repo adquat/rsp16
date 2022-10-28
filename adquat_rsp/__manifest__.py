@@ -30,9 +30,10 @@
 
     # always loaded
     'data': [
+        'data/sms_template.xml',
+        'data/mail_template.xml',
         'data/project_data.xml',
         'data/ir.model.access.csv',
-        'views/mail_template.xml',
         'views/fdi_view.xml',
         'views/sav_view.xml',
         'views/document_view.xml',
