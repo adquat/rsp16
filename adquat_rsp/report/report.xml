@@ -11,14 +11,14 @@
         </record>
     </data>
 
-    <record id="project_document_vt_xlsx" model="ir.actions.report">
-        <field name="name">Visite Technique (EXCEL)</field>
-        <field name="model">project.project</field>
-        <field name="report_type">xlsx</field>
-        <field name="report_name">adquat_rsp.report_document_vt_xlsx</field>
-        <field name="report_file">adquat_rsp.report_document_vt_xlsx</field>
-        <field name="binding_model_id" ref="project.model_project_project"/>
-        <field name="binding_type">report</field>
-    </record>
+<!--    <record id="project_document_vt_xlsx" model="ir.actions.report">-->
+<!--        <field name="name">Visite Technique (EXCEL)</field>-->
+<!--        <field name="model">project.project</field>-->
+<!--        <field name="report_type">xlsx</field>-->
+<!--        <field name="report_name">adquat_rsp.report_document_vt_xlsx</field>-->
+<!--        <field name="report_file">adquat_rsp.report_document_vt_xlsx</field>-->
+<!--        <field name="binding_model_id" ref="project.model_project_project"/>-->
+<!--        <field name="binding_type">report</field>-->
+<!--    </record>-->
 
 </odoo>
