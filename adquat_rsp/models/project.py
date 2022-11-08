@@ -275,6 +275,7 @@ class ProjectProject(models.Model):
 ## Infos FDI
     date_fdi = fields.Datetime('Date FDI', compute="_compute_date_fdi")
     fdi_ids = fields.One2many('fdi.object', 'project_id')
+    aft_file = fields.Many2one('ir.attachment', string='AFT générée', copy=False)
 
     @api.depends('fdi_ids')
     def _compute_date_fdi(self):
@@ -310,7 +311,7 @@ class ProjectProject(models.Model):
 ## Infos SAV
     sav_ids = fields.One2many('sav.object', 'project_id')
     date_sav = fields.Datetime('Date SAV', compute="_compute_date_sav")
-
+    sav_file = fields.Many2one('ir.attachment', string='SAV généré', copy=False)
     @api.depends('sav_ids')
     def _compute_date_sav(self):
         for project in self:
@@ -481,7 +482,8 @@ class ProjectProject(models.Model):
         if self.prenom_partner:
             ws.cell(6, 6).value = self.prenom_partner
 
-        ws.cell(7, 3).value = (self.street or '') + (self.street2 and '\n' + self.street2 or '')
+        ws.cell(7, 3).value = (self.street or '') + (self.street2 and '\n' + self.street2 or '') + \
+                              ('\n' + self.zip or '') + (' ' + self.city or '')
         ws.cell(7, 6).value = self.birth_partner
         ws.cell(8, 3).value = self.phone_partner
         ws.cell(8, 6).value = self.mail_partner
@@ -501,6 +503,95 @@ class ProjectProject(models.Model):
                     'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'res_id': self.id,
                     'res_model':'project.project',
+                })
+            if vt:
+                base_url = self.env['ir.config_parameter'].get_param('web.base.url')
+                download_url = '/web/content/' + str(vt.id) + '?download=true'
+                return {
+                    "type": "ir.actions.act_url",
+                    "url": str(base_url) + str(download_url),
+                    "target": "new",
+                }
+    def action_generate_xls_aft(self):
+        self.ensure_one()
+        xlsx_file_path = get_module_resource('adquat_rsp', 'report', 'aft.xlsx')
+        workbook = load_workbook(xlsx_file_path)
+        user_date_format = self.env['res.lang']._lang_get(self.env.user.lang).date_format
+        ws = workbook.active
+
+        if self.name_partner:
+            ws.cell(5, 2).value = self.name_partner
+        if self.prenom_partner:
+            ws.cell(5, 6).value = self.prenom_partner
+
+        ws.cell(6, 2).value = (self.street or '') + (self.street2 and '\n' + self.street2 or '')
+        ws.cell(7, 2).value = self.zip or ''
+        ws.cell(7, 6).value = self.city or ''
+        ws.cell(8, 2).value = self.mail_partner
+        ws.cell(8, 6).value = self.mobile_partner or self.phone_partner or ''
+
+        file_data = BytesIO(save_virtual_workbook(workbook))
+        file_data.seek(0)
+        file_data = base64.encodebytes(file_data.read())
+        if file_data:
+            if self.aft_file:
+                self.aft_file.write({'datas': file_data})
+                vt = self.aft_file
+            else:
+                vt = self.env['ir.attachment'].create({
+                    'name': 'AFT %s %s.xls' % (self.partner_id.name, self.name),
+                    'datas': file_data,
+                    'type': 'binary',
+                    'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'res_id': self.id,
+                    'res_model': 'project.project',
+                })
+            if vt:
+                base_url = self.env['ir.config_parameter'].get_param('web.base.url')
+                download_url = '/web/content/' + str(vt.id) + '?download=true'
+                return {
+                    "type": "ir.actions.act_url",
+                    "url": str(base_url) + str(download_url),
+                    "target": "new",
+                }
+    def action_generate_xls_sav(self):
+        self.ensure_one()
+        xlsx_file_path = get_module_resource('adquat_rsp', 'report', 'sav.xlsx')
+        workbook = load_workbook(xlsx_file_path)
+        user_date_format = self.env['res.lang']._lang_get(self.env.user.lang).date_format
+        ws = workbook.active
+        #
+        if self.date_sav:
+            ws.cell(3, 2).value = self.date_sav.strftime(user_date_format)
+        if self.tech_id:
+            ws.cell(3, 6).value = self.tech_id.name
+        if self.name_partner:
+            ws.cell(6, 3).value = self.name_partner
+        if self.prenom_partner:
+            ws.cell(6, 4).value = self.prenom_partner
+
+        ws.cell(7, 2).value = (self.street or '') + (self.street2 and '\n' + self.street2 or '')
+        ws.cell(8, 2).value = self.zip or ''
+        ws.cell(8, 6).value = self.city or ''
+        ws.cell(9, 2).value = self.mail_partner or ''
+        ws.cell(10, 2).value = self.mobile_partner or ''
+        ws.cell(10, 6).value = self.phone_partner or ''
+
+        file_data = BytesIO(save_virtual_workbook(workbook))
+        file_data.seek(0)
+        file_data = base64.encodebytes(file_data.read())
+        if file_data:
+            if self.sav_file:
+                self.sav_file.write({'datas': file_data})
+                vt = self.sav_file
+            else:
+                vt = self.env['ir.attachment'].create({
+                    'name': 'SAV %s %s.xls' % (self.partner_id.name, self.name),
+                    'datas': file_data,
+                    'type': 'binary',
+                    'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'res_id': self.id,
+                    'res_model': 'project.project',
                 })
             if vt:
                 base_url = self.env['ir.config_parameter'].get_param('web.base.url')

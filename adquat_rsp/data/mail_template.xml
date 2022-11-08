@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <data noupdate="1">
     <!-- TODO A MODIFIER PLUS TARD LE NOUPDATE -->
        <record id="mail_auto_vt" model="mail.template">
            <field name="name">Mail confirmation rdv VT</field>
@@ -72,7 +72,7 @@
         <record id="mail_auto_sav" model="mail.template">
             <field name="name">Mail confirmation SAV</field>
             <field name="model_id" ref="project.model_project_project"/>
-            <field name="partner_to">{{ object.partner_to }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="subject">Confirmation SAV</field>

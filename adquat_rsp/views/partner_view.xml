@@ -8,6 +8,9 @@
             <field name="category_id" position="after">
                 <field name="date_birth_partner"/>
             </field>
+            <xpath expr="//field[@id='individual']" position="attributes">
+                <attribute name="placeholder">Format : Prénom Nom</attribute>
+            </xpath>
         </field>
     </record>
 </odoo>

@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
         <!-- FICHIER EXCEL VT -->
         <record id="attachment_document_vt" model="ir.attachment">
             <field name="name">document_vt</field>
             <field name="type">binary</field>
             <field name="description">Fichier EXCEL vierge pour Visite Technique</field>
             <field name="datas" type="base64" file="adquat_rsp/report/document_vt.xlsx"/>
+            <field name="mimetype">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</field>
+        </record>
+        <!-- FICHIER EXCEL AFT -->
+        <record id="attachment_document_aft" model="ir.attachment">
+            <field name="name">document_aft</field>
+            <field name="type">binary</field>
+            <field name="description">Fichier EXCEL vierge pour AFT</field>
+            <field name="datas" type="base64" file="adquat_rsp/report/aft.xlsx"/>
+            <field name="mimetype">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</field>
+        </record>
+        <!-- FICHIER EXCEL SAV -->
+        <record id="attachment_document_sav" model="ir.attachment">
+            <field name="name">document_sav</field>
+            <field name="type">binary</field>
+            <field name="description">Fichier EXCEL vierge pour SAV</field>
+            <field name="datas" type="base64" file="adquat_rsp/report/sav.xlsx"/>
             <field name="mimetype">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</field>
         </record>
     </data>

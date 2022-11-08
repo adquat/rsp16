@@ -65,6 +65,8 @@
 <!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
 <!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
             <xpath expr="//header" position="inside">
+                <button name="finish_pose" string="Pose terminée" class="oe_highlight" type="object" groups="project.group_project_stages"
+                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_pose_planned)d)]}"/>
 <!--                <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"/>&lt;!&ndash; ct 10 avant &ndash;&gt;-->
                 <button name="finish_project" string="Clôturer projet" class="oe_highlight" type="object" groups="project.group_project_stages"
                         attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/><!-- ct 5 avant -->
@@ -200,7 +202,7 @@
                             <field name="file_to_join" widget="many2many_binary"/>
                             <field name="pic_to_join" widget="many2many_binary"/>
                         </group>
-                        <group string="VT pour Technicien" colspan="4">
+                        <group string="Document VT" colspan="4">
                             <group>
                                 <button name="action_generate_xls" string="Générer le fichier pour la visite technique" type="object" colspan="4" class="btn btn-secondary"/>
                             </group>
@@ -274,8 +276,9 @@
 
                 </page>
                 <page name="fdi" string="FDI">
-                    <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"/>
-                    <field name="fdi_ids" nolabel="1" mode="tree">
+                    <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages" colspan="4"/>
+                    <separator string="Liste des FDI" />
+                    <field name="fdi_ids" nolabel="1" mode="tree" colspan="4">
                         <tree readonly="1" create="0">
                             <field name="date"/>
                             <field name="cause"/>
@@ -303,10 +306,21 @@
                                 </sheet>
                         </form>
                     </field>
+                    <group string="Document AFT" colspan="4">
+                        <group>
+                            <button name="action_generate_xls_aft" string="Générer le fichier AFT" type="object" colspan="4" class="btn btn-secondary"/>
+                        </group>
+                        <group>
+                            <field name="aft_file" widget="binary" invisible="1"/>
+<!--                            <field name="aft_filed" widget="many2many_binary" filename="filename"/>-->
+<!--                            <field name="vt_filename" invisible="1"/>-->
+                        </group>
+                    </group>
                 </page>
                 <page name="sav" string="SAV">
-                    <button name="create_sav" string="Créer SAV" type="object" groups="project.group_project_stages"/>
-                    <field name="sav_ids" nolabel="1" mode="tree">
+                    <button name="create_sav" string="Créer SAV" type="object" groups="project.group_project_stages" colspan="4"/>
+                    <separator  string="Liste des SAV"/>
+                    <field name="sav_ids" nolabel="1" mode="tree" colspan="4">
                         <tree readonly="1" create="0">
                             <field name="type_sav"/>
                             <field name="other_type_sav" attrs="{'invisible': [('type_sav', '!=', '3')]}"/>
@@ -340,6 +354,16 @@
                                 </sheet>
                         </form>
                     </field>
+                    <group string="Document SAV" colspan="4">
+                        <group>
+                            <button name="action_generate_xls_sav" string="Générer le fichier SAV" type="object" colspan="4" class="btn btn-secondary"/>
+                        </group>
+                        <group>
+                            <field name="sav_file" widget="binary" invisible="1"/>
+<!--                            <field name="aft_filed" widget="many2many_binary" filename="filename"/>-->
+<!--                            <field name="vt_filename" invisible="1"/>-->
+                        </group>
+                    </group>
                 </page>
                 <page name="mise_service" string="Mise en Service">
                     <notebook>
