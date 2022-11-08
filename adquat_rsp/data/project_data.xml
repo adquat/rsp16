@@ -23,7 +23,7 @@
         </record>
         <record id="project_project_stage_mairie_done" model="project.project.stage">
             <field name="sequence">5</field>
-            <field name="name">Mairie faite</field>
+            <field name="name">Mairie - Réponse en attente</field>
             <field name="mail_template_id" ref="adquat_rsp.mail_auto_dp_mairie"/>
         </record>
         <record id="project_project_stage_pose_toplan" model="project.project.stage">

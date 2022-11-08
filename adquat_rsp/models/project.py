@@ -95,6 +95,7 @@ class ProjectProject(models.Model):
     abf = fields.Boolean('ABF', default=False)
     domofinance = fields.Boolean('Domofinance', default=False)
     dossier_complet = fields.Boolean('Dossier Complet', default=False, compute="_compute_dossier_complet", readonly=True)
+    vt_complet = fields.Boolean('VT Complete', default=False, compute="_compute_vt_complet", readonly=True)
 
     @api.depends('name_partner', 'prenom_partner', 'birth_partner', 'street', 'city', 'zip', 'country_id', 'phone_partner',
                  'mobile_partner', 'mail_partner', 'devis_and_chq', 'cgv', 'taxes_foncieres', 'fact_elec', 'mandat_mairie',
@@ -116,10 +117,15 @@ class ProjectProject(models.Model):
                     project.dossier_complet = True
                 elif project.gestion_surplus != 'oa':
                     project.dossier_complet = True
-            if project.dossier_complet:
+            if project.dossier_complet and project.stage_id == self.env.ref('adquat_rsp.project_project_stage_new'):
                 project.stage_id = self.env.ref('adquat_rsp.project_project_stage_vt_toplan')
-            else:
-                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_new')
+
+    @api.depends('date_vt', 'tech_id', 'file_to_join', 'pic_to_join')
+    def _compute_vt_complet(self):
+        for project in self:
+            project.vt_complet = False
+            if project.date_vt and project.tech_id and project.file_to_join and project.pic_to_join:
+                project.vt_complet = True
 
     @api.depends('amount_ht', 'prct_commission')
     def _compute_commission(self):
@@ -128,6 +134,12 @@ class ProjectProject(models.Model):
                 project.amount_commission = project.amount_ht * project.prct_commission
             else:
                 project.amount_commission = 0.0
+    @api.depends('pose_ids', 'pose_ids.date_install')
+    def _compute_pose(self):
+        for project in self:
+            project.pose_id = False
+            if project.pose_ids:
+                project.pose_id = project.pose_ids[-1].id
 
 ## Champ hors onglet
     gestion_surplus = fields.Selection([
@@ -143,7 +155,8 @@ class ProjectProject(models.Model):
     power_choose = fields.Float("Puissance Choisie")
     date_vt = fields.Datetime("Date et heure VT")
     date_mairie = fields.Date("Date accord mairie")
-    date_install = fields.Date("Date d'installation")
+    pose_id = fields.Many2one('project.pose',string="Pose actuelle", compute="_compute_pose", store=True)
+    date_install = fields.Date("Date d'installation", related="pose_id.date_install", store=True)
     #techs_name = fields.Char("Nom des techs")
     tech_ids = fields.Many2many('hr.employee', 'project_tech_ids', string="Techniciens",
                                 domain=lambda self: [('department_id', '=', self.env.ref('adquat_rsp.hr_department_tech').id)])
@@ -153,7 +166,8 @@ class ProjectProject(models.Model):
 
 
 ## fichier et infos onglet VT
-    tech_id = fields.Many2one('hr.employee', string='Technicien VT')
+    tech_id = fields.Many2one('hr.employee', string='Technicien VT',
+                              domain=lambda self: [('department_id', '=', self.env.ref('adquat_rsp.hr_department_tech').id)])
     file_to_join = fields.Many2many('ir.attachment', 'ir_attachment_file_join', string='Fichiers à joindre')
     pic_to_join = fields.Many2many('ir.attachment', 'ir_attachment_pic_join', string='Photos à joindre')
     vt_file = fields.Many2one('ir.attachment', string='Fiche Technique générée', copy=False)
@@ -165,7 +179,7 @@ class ProjectProject(models.Model):
         for project in self:
             if project.date_vt:
                 if project.file_to_join and project.pic_to_join and project.tech_id and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_vt_planned').id:
-                    project.stage_id = self.env.ref('adquat_rsp.project_project_stage_mairie').id
+                    project.stage_id = self.env.ref('adquat_rsp.project_project_stage_mairie_todo').id
                 else:
                     project.stage_id = self.env.ref('adquat_rsp.project_project_stage_vt_planned').id
             else:
@@ -190,18 +204,18 @@ class ProjectProject(models.Model):
         for project in self:
             if project.sending_date_mairie:
                 project.done = True
-                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_mairie_todo').id
+                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_mairie_done').id
             else:
                 project.done = False
 
     @api.onchange('mairie_answer', 'mairie_answer_to_join', 'rsp_to_join')
     def _onchange_stage_id_mairie(self):
         for project in self:
-            if ((project.mairie_answer == 'yes' and project.mairie_answer_to_join) or project.rsp_to_join) and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_mairie_todo').id:
-                import pdb;
-                pdb.set_trace()
-                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id
+            if project.mairie_answer:
                 project.mairie_answer_date = fields.Date.today()
+                project.date_mairie = fields.Date.today()
+            if ((project.mairie_answer == 'yes' and project.mairie_answer_to_join) or project.rsp_to_join) and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_mairie_done').id:
+                project.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id
             else:
                 pass
     def action_fsm_navigate(self):
@@ -220,14 +234,16 @@ class ProjectProject(models.Model):
             project.has_complete_partner_address = project.partner_id.city and project.partner_id.country_id
 
 ##Fichiers et infos onglet Pose
-    return_caution = fields.Boolean('Retour chq Caution', default=False)
-    aft = fields.Many2many('ir.attachment', 'ir_attachment_aft', string='AFT')
-    picture = fields.Many2many('ir.attachment', 'ir_attachment_picture', string='Photos')
-    calepinage_emphase = fields.Many2many('ir.attachment', 'ir_attachment_calepinage', string='Calepinage Enphase')
-    implantation_emphase = fields.Many2many('ir.attachment', 'ir_attachment_implantation', string='Rapport Enphase')
-    quotation_alaska = fields.Many2many('ir.attachment', 'ir_attachment_quot_alaska', string='Devis Alaska')
-    invoice_alaska = fields.Many2many('ir.attachment', 'ir_attachment_inv_alaska', string='Facture alaska')
-    invoice_finalRsp = fields.Many2many('ir.attachment', 'ir_attachment_inv_rsp', string='Facture finale RSP client')
+    pose_ids = fields.One2many('project.pose', 'project_id')
+    # return_caution = fields.Boolean('Retour chq Caution', default=False)
+    #attachment_pose_ids = fields.Many2many('ir.attachment', string='Pose Attachments', compute='_compute_attachment_pose_ids', store=True)
+    # aft = fields.Many2many('ir.attachment', 'ir_attachment_all_aft', string='AFT')
+    # picture = fields.Many2many('ir.attachment', 'ir_attachment_all_picture', string='Photos')
+    # calepinage_emphase = fields.Many2many('ir.attachment', 'ir_attachment_all_calepinage', string='Calepinage Enphase')
+    # implantation_emphase = fields.Many2many('ir.attachment', 'ir_attachment_all_implantation', string='Rapport Enphase')
+    # quotation_alaska = fields.Many2many('ir.attachment', 'ir_attachment_all_quot_alaska', string='Devis Alaska')
+    # invoice_alaska = fields.Many2many('ir.attachment', 'ir_attachment_all_inv_alaska', string='Facture alaska')
+    # invoice_finalRsp = fields.Many2many('ir.attachment', 'ir_attachment_all_inv_rsp', string='Facture finale RSP client')
     all_file_is_good = fields.Boolean(default=False)
     has_complete_partner_address = fields.Boolean(compute='_compute_has_complete_partner_address')
 
@@ -596,8 +612,49 @@ class ProjectProject(models.Model):
 
         return True
 
+class Pose(models.Model):
+    _name = 'project.pose'
+    _order = 'project_id, id desc'
+    _inherit = 'documents.mixin'
+
+    def _get_document_vals(self, attachment):
+        self.ensure_one()
+        vals = super(Pose,self)._get_document_vals(attachment)
+        vals['res_model'] = 'project.project'
+        vals['res_id'] = self.project_id.id
+        return vals
+    def _get_document_folder(self):
+        return self.project_id.documents_folder_pose
+    def _get_document_partner(self):
+        return self.project_id.partner_id
+
+    project_id = fields.Many2one('project.project', string='Projet', required=True)
+    date_install = fields.Date("Date d'installation")
+    notes = fields.Text(string='Notes')
+    return_caution = fields.Boolean('Retour chq Caution', default=False)
+    #PJs
+    aft = fields.Many2many('ir.attachment', 'ir_attachment_pose_aft', string='AFT')
+    picture = fields.Many2many('ir.attachment', 'ir_attachment_pose_picture', string='Photos')
+    calepinage_emphase = fields.Many2many('ir.attachment', 'ir_attachment_pose_calepinage', string='Calepinage Enphase')
+    implantation_emphase = fields.Many2many('ir.attachment', 'ir_attachment_pose_implantation', string='Rapport Enphase')
+    quotation_alaska = fields.Many2many('ir.attachment', 'ir_attachment_pose_quot_alaska', string='Devis Alaska')
+    invoice_alaska = fields.Many2many('ir.attachment', 'ir_attachment_pose_inv_alaska', string='Facture alaska')
+    invoice_finalRsp = fields.Many2many('ir.attachment', 'ir_attachment_pose_inv_rsp', string='Facture finale RSP client')
+    all_file_is_good = fields.Boolean(default=False)
+
 class Fdi(models.Model):
     _name = 'fdi.object'
+    _inherit = 'documents.mixin'
+    def _get_document_vals(self, attachment):
+        self.ensure_one()
+        vals = super(Fdi,self)._get_document_vals(attachment)
+        vals['res_model'] = 'project.project'
+        vals['res_id'] = self.project_id.id
+        return vals
+    def _get_document_folder(self):
+        return self.project_id.documents_folder_fdi
+    def _get_document_partner(self):
+        return self.project_id.partner_id
 
     state = fields.Selection([
         ('a_planif', 'À programmer'),
@@ -605,10 +662,11 @@ class Fdi(models.Model):
         ('finish', 'Terminée'),
         ('no', 'Interrompu')
     ], string="État", default="a_planif")
-    project_id = fields.Many2one('project.project', string='Projet')
+    project_id = fields.Many2one('project.project', string='Projet', required=True)
     aft_fdi = fields.Many2many('ir.attachment', 'ir_attachment_aft_fdi', string='AFT')
     date = fields.Datetime('Date')
     pictures_fdi = fields.Many2many('ir.attachment', 'ir_attachment_pictures_fdi', string='Photos')
+    cause = fields.Char('Cause interruption')
 
     @api.onchange('date')
     def _on_change_state(self):
@@ -627,8 +685,19 @@ class Fdi(models.Model):
 
 class Sav(models.Model):
     _name = 'sav.object'
+    _inherit = 'documents.mixin'
+    def _get_document_vals(self, attachment):
+        self.ensure_one()
+        vals = super(Sav,self)._get_document_vals(attachment)
+        vals['res_model'] = 'project.project'
+        vals['res_id'] = self.project_id.id
+        return vals
+    def _get_document_folder(self):
+        return self.project_id.documents_folder_sav
+    def _get_document_partner(self):
+        return self.project_id.partner_id
 
-    project_id = fields.Many2one('project.project')
+    project_id = fields.Many2one('project.project', required=True)
     type_sav = fields.Selection([
         ('1', 'Toiture'),
         ('2', 'Elec'),

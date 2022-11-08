@@ -13,8 +13,8 @@
                <div style="margin: 0px; padding: 0px;">
                    Bonjour <t t-out="object.partner_id.name"/>,
                    <br/><br/>
-                   Je vous confirme votre rendez-vous avec notre technicien pour votre visite technique le:<br/>
-                   <t t-out="object.date_vt.strftime('%d/%m/%Y à %Hh%M')" style="text-align: center;"/>.
+                   Je vous confirme votre rendez-vous avec notre technicien pour votre visite technique le :<br/>
+                   <t t-if="object.date_vt" t-out="format_datetime(dt=object.date_vt, tz=object.env.user.tz) or ''" style="text-align: center;"/>
                    <br/><br/>
                    Cette visite dure 1 heure.
                    <br/><br/>
@@ -60,7 +60,7 @@
                     Bonjour <t t-out="object.partner_id.name"/>,
                     <br/><br/>
                     Je vous confirme que votre fin d'installation solaire aura lieu le:
-                    <br/><t t-out="object.date_fdi" style="text-align: center;"/>
+                    <br/><t t-if="object.date_fdi" t-out="object.date_fdi.strftime('%d/%m/%Y')" style="text-align: center;"/>
                     <br/><br/>
                     Restant à votre disposition,
                     <br/><br/>
@@ -80,8 +80,8 @@
                 <div style="margin: 0px; padding: 0px;">
                     Bonjour <t t-out="object.partner_id.name"/>,
                     <br/><br/>
-                    Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le:
-                    <br/><t t-out="object.date_sav.strftime('%d/%m/%Y à %Hh%M')" style="text-align: center;"/>
+                    Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le :
+                    <br/><t t-if="object.date_sav" t-out="format_datetime(dt=object.date_sav, tz=object.env.user.tz) or ''" style="text-align: center;"/>
                     <br/><br/>
                     Restant à votre disposition,
                     <br/><br/>

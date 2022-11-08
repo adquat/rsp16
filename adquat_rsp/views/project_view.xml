@@ -65,14 +65,11 @@
 <!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
 <!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
             <xpath expr="//header" position="inside">
-                <button name="finish_pose" string="Pose terminée" type="object" class="oe_highlight" groups="project.group_project_stages"
-                        attrs="{'invisible': ['|', ('stage_id', '!=', %(adquat_rsp.project_project_stage_sav)d), ('all_file_is_good', '=', False)]}"/><!-- ct 10 avant -->
-                <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"
-                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_sav)d)]}"/><!-- ct 10 avant -->
+<!--                <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"/>&lt;!&ndash; ct 10 avant &ndash;&gt;-->
                 <button name="finish_project" string="Clôturer projet" class="oe_highlight" type="object" groups="project.group_project_stages"
                         attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/><!-- ct 5 avant -->
-                <button name="create_sav" string="Créer SAV" type="object" groups="project.group_project_stages"
-                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/><!-- ct 5 avant -->
+<!--                <button name="create_sav" string="Créer SAV" type="object" groups="project.group_project_stages"-->
+<!--                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/>&lt;!&ndash; ct 5 avant &ndash;&gt;-->
             </xpath>
             <xpath expr="//div[@name='dates']" position="attributes">
                 <attribute name="invisible">
@@ -119,6 +116,7 @@
                     <field name="date_signature"/>
                     <field name="date_vt"/>
                     <field name="date_mairie"/>
+<!--                    <field name="pose_id"/>-->
                     <field name="date_install"/>
                     <field name="date_fdi"/>
                     <field name="date_sav"/>
@@ -215,81 +213,133 @@
                     </group>
                 </page>
                 <page name="mairie" string="Mairie">
-                    <group>
+                    <group string="Déclaration à la mairie">
                         <group string="Informations">
                             <field name="sending_date_mairie"/>
-                            <field name="mairie_answer" widget="selection_badge"/>
-                            <field name="mairie_answer_date" />
 <!--                            <separator colspan="2" string="Validation"/>-->
-                            <field name="done" groups="base.group_no_one" />
+<!--                            <field name="done" groups="base.group_no_one" />-->
                         </group>
                         <group string="Pièces jointes">
                             <field name="recepisse_to_join" widget="many2many_binary"/>
                             <field name="other_attachments_to_join" widget="many2many_binary"/>
                             <field name="abf_to_join" widget="many2many_binary"/>
+                        </group>
+                    </group>
+                    <group string="Réponse de la mairie">
+                        <group string="Informations">
+                            <field name="mairie_answer" widget="selection_badge"/>
+                            <field name="mairie_answer_date" />
+                        </group>
+                        <group string="Pièces jointes">
                             <field name="mairie_answer_to_join" widget="many2many_binary"/>
                             <field name="rsp_to_join" widget="many2many_binary"/>
                         </group>
                     </group>
                 </page>
                 <page name="pose" string="Pose">
-                    <group>
-                        <group string="Informations">
-                            <field name="date_install"/>
-                            <field name="return_caution"/>
-                        </group>
-                        <group string="Pièces jointes">
-                            <field name="quotation_alaska" widget="many2many_binary"/>
-                            <field name="invoice_alaska" widget="many2many_binary"/>
-                            <field name="aft" widget="many2many_binary"/>
-                            <field name="picture"  widget="many2many_binary"/>
-                            <field name="implantation_emphase" widget="many2many_binary"/>
-                            <field name="calepinage_emphase" widget="many2many_binary"/>
-                            <field name="invoice_finalRsp" widget="many2many_binary"/>
-                        </group>
-                        <field name="all_file_is_good" invisible="1"/>
-                    </group>
+                    <field name="pose_ids" nolabel="1" mode="tree">
+                        <tree>
+                            <field name="date_install" width="20%"/>
+                            <field name="return_caution" width="20%"/>
+                            <field name="notes"/>
+                            <field name="quotation_alaska" widget="many2many_binary" optional="hide"/>
+                            <field name="invoice_alaska" widget="many2many_binary" optional="hide"/>
+                            <field name="aft" widget="many2many_binary" optional="hide"/>
+                            <field name="picture"  widget="many2many_binary" optional="hide"/>
+                            <field name="implantation_emphase" widget="many2many_binary" optional="hide"/>
+                            <field name="calepinage_emphase" widget="many2many_binary" optional="hide"/>
+                            <field name="invoice_finalRsp" widget="many2many_binary" optional="hide"/>
+                        </tree>
+                        <form>
+                            <group>
+                                <group string="Informations">
+                                    <field name="date_install"/>
+                                    <field name="return_caution"/>
+                                    <field name="notes"/>
+                                </group>
+                                <group string="Pièces jointes">
+                                    <field name="quotation_alaska" widget="many2many_binary"/>
+                                    <field name="invoice_alaska" widget="many2many_binary"/>
+                                    <field name="aft" widget="many2many_binary"/>
+                                    <field name="picture"  widget="many2many_binary"/>
+                                    <field name="implantation_emphase" widget="many2many_binary"/>
+                                    <field name="calepinage_emphase" widget="many2many_binary"/>
+                                    <field name="invoice_finalRsp" widget="many2many_binary"/>
+                                </group>
+                                <field name="all_file_is_good" invisible="1"/>
+                            </group>
+                        </form>
+                    </field>
+<!--                    <field name="attachment_pose_ids" widget="many2many_binary"/>-->
+
                 </page>
                 <page name="fdi" string="FDI">
-                    <field name="fdi_ids" nolabel="1" mode="kanban"/>
-<!--                        <form>-->
-<!--                            <field name="date"/>-->
-<!--                            <field name="aft_fdi" widget="many2many_binary"/>-->
-<!--                            <field name="pictures_fdi" widget="many2many_binary"/>-->
-<!--                            <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"-->
-<!--                                   decoration-danger="(state == 'no')" widget="badge"/>-->
-<!--                            <button name="yes_finish" type="object" string="Oui" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>-->
-<!--                            <button name="no_finish" type="object" string="Non" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>-->
-<!--                        </form>-->
-<!--                        <tree editable="top">-->
-<!--                            <field name="date"/>-->
-<!--                            <field name="aft_fdi" widget="many2many_binary"/>-->
-<!--                            <field name="pictures_fdi" widget="many2many_binary"/>-->
-<!--                            <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"-->
-<!--                                   decoration-danger="(state == 'no')" widget="badge"/>-->
-<!--                            <button name="yes_finish" type="object" string="Oui" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>-->
-<!--                            <button name="no_finish" type="object" string="Non" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>-->
-<!--                        </tree>-->
-<!--                    </field>-->
+                    <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"/>
+                    <field name="fdi_ids" nolabel="1" mode="tree">
+                        <tree readonly="1" create="0">
+                            <field name="date"/>
+                            <field name="cause"/>
+                            <field name="aft_fdi" widget="many2many_binary"/>
+                            <field name="pictures_fdi" widget="many2many_binary"/>
+                            <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
+                                   decoration-danger="(state == 'no')" widget="badge"/>
+                            <button name="yes_finish" type="object" string="Terminer" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                            <button name="no_finish" type="object" string="Interrompre" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                        </tree>
+                        <form string="FDI">
+                            <header>
+                                <button name="yes_finish" type="object" string="Terminer" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                                <button name="no_finish" type="object" string="Interrompre" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                                <field name="state" widget="statusbar" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
+                                           decoration-danger="(state == 'no')"/>
+                            </header>
+                                <sheet>
+                                    <group>
+                                        <field name="date"/>
+                                        <field name="cause"/>
+                                        <field name="aft_fdi" widget="many2many_binary"/>
+                                        <field name="pictures_fdi" widget="many2many_binary"/>
+                                    </group>
+                                </sheet>
+                        </form>
+                    </field>
                 </page>
                 <page name="sav" string="SAV">
-                    <group>
-                        <field name="sav_ids" nolabel="1" mode="kanban"/>
-<!--                            <tree editable="bottom">-->
-<!--                                <field name="type_sav"/>-->
-<!--                                <field name="other_type_sav" attrs="{'invisible': [('type_sav', '!=', '3')]}"/>-->
-<!--                                <field name="date"/>-->
+                    <button name="create_sav" string="Créer SAV" type="object" groups="project.group_project_stages"/>
+                    <field name="sav_ids" nolabel="1" mode="tree">
+                        <tree readonly="1" create="0">
+                            <field name="type_sav"/>
+                            <field name="other_type_sav" attrs="{'invisible': [('type_sav', '!=', '3')]}"/>
+                            <field name="date"/>
 <!--                                <field name="return_picture" widget="many2many_binary"/>-->
-<!--                                <field name="sheet_intervention" widget="many2many_binary"/>-->
-<!--                                <field name="picture_sav" widget="many2many_binary"/>-->
-<!--                                <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"-->
-<!--                                       decoration-danger="(state == 'no')" widget="badge"/>-->
-<!--                                <button name="mise_en_service" type="object" string="Mise en Service" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>-->
-<!--                                <button name="close_project" type="object" string="Clôturer projet" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>-->
-<!--                                <button name="no_finish_sav" type="object" string="Non Fini" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>-->
-<!--                            </tree>-->
-<!--                        </field>-->
-                    </group>
+                            <field name="sheet_intervention" widget="many2many_binary"/>
+                            <field name="picture_sav" widget="many2many_binary"/>
+                            <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
+                                   decoration-danger="(state == 'no')" widget="badge"/>
+                            <button name="mise_en_service" type="object" string="Mise en Service" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                            <button name="close_project" type="object" string="Clôturer projet" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                            <button name="no_finish_sav" type="object" string="Non Fini" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                        </tree>
+                        <form string="SAV">
+                            <header>
+                                <button name="mise_en_service" type="object" string="Mise en Service" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                                <button name="close_project" type="object" string="Clôturer projet" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                                <button name="no_finish_sav" type="object" string="Non Fini" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
+                                <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
+                                       decoration-danger="(state == 'no')"  widget="statusbar"/>
+                            </header>
+                                <sheet>
+                                    <group>
+                                        <field name="date"/>
+                                        <field name="type_sav"/>
+                                        <field name="other_type_sav" attrs="{'invisible': [('type_sav', '!=', '3')]}"/>
+            <!--                                <field name="return_picture" widget="many2many_binary"/>-->
+                                        <field name="sheet_intervention" widget="many2many_binary"/>
+                                        <field name="picture_sav" widget="many2many_binary"/>
+                                    </group>
+                                </sheet>
+                        </form>
+                    </field>
                 </page>
                 <page name="mise_service" string="Mise en Service">
                     <notebook>
