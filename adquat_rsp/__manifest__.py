@@ -39,6 +39,7 @@
         'views/document_view.xml',
         'views/project_view.xml',
         'views/partner_view.xml',
+        'wizard/wizard_view.xml',
         'report/report.xml',
     ],
     'license': 'LGPL-3',

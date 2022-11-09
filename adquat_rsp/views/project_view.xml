@@ -279,7 +279,7 @@
                     <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages" colspan="4"/>
                     <separator string="Liste des FDI" />
                     <field name="fdi_ids" nolabel="1" mode="tree" colspan="4">
-                        <tree readonly="1" create="0">
+                        <tree readonly="1" create="0" delete="0">
                             <field name="date"/>
                             <field name="cause"/>
                             <field name="aft_fdi" widget="many2many_binary"/>
@@ -321,10 +321,10 @@
                     <button name="create_sav" string="Créer SAV" type="object" groups="project.group_project_stages" colspan="4"/>
                     <separator  string="Liste des SAV"/>
                     <field name="sav_ids" nolabel="1" mode="tree" colspan="4">
-                        <tree readonly="1" create="0">
+                        <tree readonly="1" create="0" delete="0">
+                            <field name="date"/>
                             <field name="type_sav"/>
                             <field name="other_type_sav" attrs="{'invisible': [('type_sav', '!=', '3')]}"/>
-                            <field name="date"/>
 <!--                                <field name="return_picture" widget="many2many_binary"/>-->
                             <field name="sheet_intervention" widget="many2many_binary"/>
                             <field name="picture_sav" widget="many2many_binary"/>

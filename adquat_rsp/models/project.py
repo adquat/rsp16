@@ -267,10 +267,20 @@ class ProjectProject(models.Model):
         self.stage_id = self.env.ref('adquat_rsp.project_project_stage_mes').id
 
     def create_fdi(self):
-        self.env['fdi.object'].create({
-            'project_id': self.id,
-        })
-        self.stage_id = self.env.ref('adquat_rsp.project_project_stage_fdi').id
+
+        self.ensure_one()
+        new_context = self.env.context.copy()
+        new_context['default_type'] = 'fdi'
+        new_context['default_project_id'] = self.id
+
+        return {
+            'name': 'Assistant FDI',
+            'view_mode': 'form',
+            'res_model': 'project.fdi.sav.wizard',
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+            'context': new_context,
+        }
 
 ## Infos FDI
     date_fdi = fields.Datetime('Date FDI', compute="_compute_date_fdi")
@@ -376,10 +386,18 @@ class ProjectProject(models.Model):
         self.stage_id = self.env.ref('adquat_rsp.project_project_stage_done').id
 
     def create_sav(self):
-        self.env['sav.object'].create({
-            'project_id': self.id,
-        })
-        self.stage_id = self.env.ref('adquat_rsp.project_project_stage_sav').id
+        self.ensure_one()
+        new_context = self.env.context.copy()
+        new_context['default_type'] = 'sav'
+        new_context['default_project_id'] = self.id
+        return {
+            'name': 'Assistant SAV',
+            'view_mode': 'form',
+            'res_model': 'project.fdi.sav.wizard',
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+            'context': new_context,
+        }
 
     # Consuel
     shipping_number = fields.Char('Numéro d\'envoi')

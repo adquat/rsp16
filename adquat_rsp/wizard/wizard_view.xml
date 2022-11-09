@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_project_fdi_sav_wizard" model="ir.ui.view">
+        <field name="name">project.fdi.sav.wizard.form</field>
+        <field name="model">project.fdi.sav.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Assistant">
+                <group invisible="1">
+                    <field name="project_id"/>
+                    <field name="type"/>
+                </group>
+                <group attrs="{'invisible': [('type', '!=', 'fdi')]}" colspan="4">
+                    <group>
+                        <field name="date" />
+                        <field name="cause" attrs="{'required': [('type', '=', 'fdi')]}"/>
+                    </group>
+                </group>
+                <group attrs="{'invisible': [('type', '!=', 'sav')]}" colspan="4">
+                    <group>
+                        <field name="date"/>
+                        <field name="type_sav" attrs="{'required': [('type', '=', 'sav')]}"/>
+                        <field name="other_type_sav" attrs="{'invisible': [('type', '=', 'sav'),('type_sav', '!=', '3')]}"/>
+                    </group>
+                </group>
+                <footer>
+                    <button string="Créer" type="object" name="validate" class="btn btn-primary"/>
+                    <button string="Annuler" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
