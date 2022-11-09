@@ -771,7 +771,7 @@ class Fdi(models.Model):
         ('finish', 'Terminée'),
         ('no', 'Interrompu')
     ], string="État", default="a_planif")
-    project_id = fields.Many2one('project.project', string='Projet', required=True)
+    project_id = fields.Many2one('project.project', string='Projet', required=True, ondelete='cascade')
     aft_fdi = fields.Many2many('ir.attachment', 'ir_attachment_aft_fdi', string='AFT')
     date = fields.Datetime('Date')
     pictures_fdi = fields.Many2many('ir.attachment', 'ir_attachment_pictures_fdi', string='Photos')
@@ -806,7 +806,7 @@ class Sav(models.Model):
     def _get_document_partner(self):
         return self.project_id.partner_id
 
-    project_id = fields.Many2one('project.project', required=True)
+    project_id = fields.Many2one('project.project', required=True, ondelete='cascade')
     type_sav = fields.Selection([
         ('1', 'Toiture'),
         ('2', 'Elec'),
