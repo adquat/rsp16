@@ -6,7 +6,7 @@
         Personalisations diverses pour RSP""",
 
     'description': """
-        Personalisations diverses pour RSP
+        Personnalisations diverses pour RSP
     """,
 
     'author': "Adquat",

@@ -59,7 +59,7 @@
                 <div style="margin: 0px; padding: 0px;">
                     Bonjour <t t-out="object.partner_id.name"/>,
                     <br/><br/>
-                    Je vous confirme que votre fin d'installation solaire aura lieu le:
+                    Je vous confirme que votre fin d'installation solaire aura lieu le :
                     <br/><t t-if="object.date_fdi" t-out="object.date_fdi.strftime('%d/%m/%Y')" style="text-align: center;"/>
                     <br/><br/>
                     Restant à votre disposition,

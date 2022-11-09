@@ -53,7 +53,7 @@ class ProjectProject(models.Model):
     country_code = fields.Char(related='country_id.code', string="Country Code")
     phone_partner = fields.Char(string="Téléphone", related="partner_id.phone")
     mobile_partner = fields.Char(string="Mobile", related="partner_id.mobile")
-    mail_partner = fields.Char(string="Adresse Mail", related="partner_id.email")
+    mail_partner = fields.Char(string="Email", related="partner_id.email")
     time = fields.Char("Temps de Route")
     parrainage = fields.Many2one('res.partner', string="Parrainage",
                                  domain=lambda self: [('category_id', 'in', self.env.ref('adquat_rsp.res_partner_category_customer').id),
