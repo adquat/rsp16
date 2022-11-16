@@ -113,9 +113,7 @@ class ProjectProject(models.Model):
                            and project.date_signature and project.power_choose and project.user_ids
             #CHECK
             if coordonnees_complete and pjs_standard:
-                if project.gestion_surplus == 'oa' and project.mandat_OA:
-                    project.dossier_complet = True
-                elif project.gestion_surplus != 'oa':
+                if (project.gestion_surplus == 'oa' and project.mandat_OA) or project.gestion_surplus != 'oa':
                     project.dossier_complet = True
             if project.dossier_complet and project.stage_id == self.env.ref('adquat_rsp.project_project_stage_new'):
                 project.stage_id = self.env.ref('adquat_rsp.project_project_stage_vt_toplan')
@@ -515,7 +513,7 @@ class ProjectProject(models.Model):
                 vt = self.vt_file
             else:
                 vt = self.env['ir.attachment'].create({
-                    'name': 'Visite Technique %s %s.xls' % (self.partner_id.name, self.name),
+                    'name': 'Visite Technique %s %s.xlsx' % (self.partner_id.name, self.name),
                     'datas': file_data,
                     'type': 'binary',
                     'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -557,7 +555,7 @@ class ProjectProject(models.Model):
                 vt = self.aft_file
             else:
                 vt = self.env['ir.attachment'].create({
-                    'name': 'AFT %s %s.xls' % (self.partner_id.name, self.name),
+                    'name': 'AFT %s %s.xlsx' % (self.partner_id.name, self.name),
                     'datas': file_data,
                     'type': 'binary',
                     'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -604,7 +602,7 @@ class ProjectProject(models.Model):
                 vt = self.sav_file
             else:
                 vt = self.env['ir.attachment'].create({
-                    'name': 'SAV %s %s.xls' % (self.partner_id.name, self.name),
+                    'name': 'SAV %s %s.xlsx' % (self.partner_id.name, self.name),
                     'datas': file_data,
                     'type': 'binary',
                     'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
