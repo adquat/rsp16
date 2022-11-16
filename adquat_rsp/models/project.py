@@ -22,7 +22,7 @@ class ProjectProject(models.Model):
         return ['phone_partner']
 
     #HERITAGE
-    partner_id = fields.Many2one('res.partner', string='Customer', auto_join=True, tracking=True, required=True,
+    partner_id = fields.Many2one('res.partner', string='Client', auto_join=True, tracking=True, required=True,
                                  domain=lambda self: [('category_id', 'in', self.env.ref('adquat_rsp.res_partner_category_customer').id),
                                                       '|', ('company_id', '=', False), ('company_id', '=', self.env.company)])
 
@@ -107,12 +107,25 @@ class ProjectProject(models.Model):
             coordonnees_complete = project.name_partner and project.prenom_partner and project.birth_partner \
                                    and project.street and project.city and project.zip and project.country_id \
                                    and (project.phone_partner or project.mobile_partner) and project.mail_partner
+            #POWER
+            if project.existing_power:
+                power_complete = project.rv_or_auto and project.crae and project.bta or False
+            else:
+                power_complete = True
+
+            #MSB
+            if (project.gestion_surplus == 'msb' and project.msb) or project.gestion_surplus != 'msb':
+                msb_complete = True
+            else:
+                msb_complete = False
+
             #PJs
             pjs_standard = project.devis_and_chq and project.taxes_foncieres and project.cgv and project.fact_elec \
                            and project.mandat_mairie and project.mandat_enedis and project.amount_ht \
                            and project.date_signature and project.power_choose and project.user_ids
+
             #CHECK
-            if coordonnees_complete and pjs_standard:
+            if coordonnees_complete and pjs_standard and power_complete and msb_complete:
                 if (project.gestion_surplus == 'oa' and project.mandat_OA) or project.gestion_surplus != 'oa':
                     project.dossier_complet = True
             if project.dossier_complet and project.stage_id == self.env.ref('adquat_rsp.project_project_stage_new'):
@@ -154,6 +167,8 @@ class ProjectProject(models.Model):
     date_vt = fields.Datetime("Date et heure VT")
     date_mairie = fields.Date("Date accord mairie")
     pose_id = fields.Many2one('project.pose',string="Pose actuelle", compute="_compute_pose", store=True)
+    pose_id_mylight = fields.Boolean(string="MyLight Pose actuelle", related="pose_id.monitoring_mylight")
+    pose_id_enphase = fields.Boolean(string="Enphase Pose actuelle", related="pose_id.enphase")
     date_install = fields.Date("Date d'installation", related="pose_id.date_install", store=True)
     #techs_name = fields.Char("Nom des techs")
     tech_ids = fields.Many2many('hr.employee', 'project_tech_ids', string="Techniciens",
@@ -186,6 +201,7 @@ class ProjectProject(models.Model):
 ## fichiers et infos onglet Mairie
     done = fields.Boolean('Faite / Pas Faite')
     sending_date_mairie = fields.Date('Date d\'envoi ')
+    mairie_answer_sent = fields.Boolean('Réponse de la mairie envoyée au client')
     mairie_answer_date = fields.Date('Date de réponse')
     mairie_answer = fields.Selection([
         ('yes', 'Accord'),
@@ -214,6 +230,19 @@ class ProjectProject(models.Model):
                 project.date_mairie = fields.Date.today()
             if ((project.mairie_answer == 'yes' and project.mairie_answer_to_join) or project.rsp_to_join) and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_mairie_done').id:
                 project.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id
+            if project.mairie_answer == 'yes' and not project.mairie_answer_sent:
+                args = {
+                    'auto_delete_message': True,
+                    'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
+                    'email_layout_xmlid': 'mail.mail_notification_light'
+                }
+                if self.env.ref('adquat_rsp.mail_auto_accord_mairie'):
+                    project.message_post_with_template(self.env.ref('adquat_rsp.mail_auto_accord_mairie').id,  **{
+                        'auto_delete_message': False,
+                        'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
+                        'email_layout_xmlid': 'mail.mail_notification_light'
+                    })
+                    project.mairie_answer_sent = True
             else:
                 pass
     def action_fsm_navigate(self):
@@ -739,6 +768,9 @@ class Pose(models.Model):
     date_install = fields.Date("Date d'installation")
     notes = fields.Text(string='Notes')
     return_caution = fields.Boolean('Retour chq Caution', default=False)
+    monitoring_mylight = fields.Boolean('Monitoring MyLight', default=False)
+    enphase = fields.Boolean('Enphase', default=False)
+
     #PJs
     aft = fields.Many2many('ir.attachment', 'ir_attachment_pose_aft', string='AFT')
     picture = fields.Many2many('ir.attachment', 'ir_attachment_pose_picture', string='Photos')

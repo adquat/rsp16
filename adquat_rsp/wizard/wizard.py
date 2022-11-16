@@ -27,6 +27,7 @@ class FdiSavWizard(models.TransientModel):
                 'project_id': self.project_id.id,
                 'date': self.date,
                 'cause': self.cause,
+                'state':'planif',
             })
             self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_fdi').id
         else:

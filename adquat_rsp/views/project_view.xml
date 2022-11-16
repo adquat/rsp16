@@ -66,7 +66,7 @@
 <!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
             <xpath expr="//header" position="inside">
                 <button name="finish_pose" string="Pose terminée" class="oe_highlight" type="object" groups="project.group_project_stages"
-                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_pose_planned)d)]}"/>
+                        attrs="{'invisible': ['|','|',('stage_id', '!=',  %(adquat_rsp.project_project_stage_pose_planned)d), ('pose_id_mylight', '=', False), ('pose_id_enphase', '=', False)]}"/>
 <!--                <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"/>&lt;!&ndash; ct 10 avant &ndash;&gt;-->
                 <button name="finish_project" string="Clôturer projet" class="oe_highlight" type="object" groups="project.group_project_stages"
                         attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/><!-- ct 5 avant -->
@@ -118,7 +118,9 @@
                     <field name="date_signature"/>
                     <field name="date_vt"/>
                     <field name="date_mairie"/>
-<!--                    <field name="pose_id"/>-->
+                    <field name="pose_id" invisible="1"/>
+                    <field name="pose_id_mylight" invisible="1"/>
+                    <field name="pose_id_enphase" invisible="1"/>
                     <field name="date_install"/>
                     <field name="date_fdi"/>
                     <field name="date_sav"/>
@@ -231,6 +233,7 @@
                         <group string="Informations">
                             <field name="mairie_answer" widget="selection_badge"/>
                             <field name="mairie_answer_date" />
+                            <field name="mairie_answer_sent" />
                         </group>
                         <group string="Pièces jointes">
                             <field name="mairie_answer_to_join" widget="many2many_binary"/>
@@ -243,6 +246,8 @@
                         <tree>
                             <field name="date_install" width="20%"/>
                             <field name="return_caution" width="20%"/>
+                            <field name="monitoring_mylight" width="20%"/>
+                            <field name="enphase" width="20%"/>
                             <field name="notes"/>
                             <field name="quotation_alaska" widget="many2many_binary" optional="hide"/>
                             <field name="invoice_alaska" widget="many2many_binary" optional="hide"/>
@@ -257,6 +262,8 @@
                                 <group string="Informations">
                                     <field name="date_install"/>
                                     <field name="return_caution"/>
+                                    <field name="monitoring_mylight"/>
+                                    <field name="enphase"/>
                                     <field name="notes"/>
                                 </group>
                                 <group string="Pièces jointes">
