@@ -26,6 +26,7 @@
                 'base_geolocalize',
                 'sms',
                 'documents_project',
+                'partner_firstname',
     ],
 
     # always loaded

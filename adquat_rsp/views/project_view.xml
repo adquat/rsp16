@@ -107,7 +107,7 @@
 
             <xpath expr="//group/group" position="attributes">
                 <attribute name="name">
-                    infos
+                    Infos
                 </attribute>
                 <attribute name="string">
                     Informations générales
@@ -183,9 +183,9 @@
                         <field name="dossier_complet"/>
                     </group>
                 </group>
-                <group string="Pièces jointes" context="{'project_onglet':'fiche'}">
-                    <field name="devis_and_chq" widget="many2many_binary"/>
-                    <field name="cgv" widget="many2many_binary"/>
+                <group string="Pièces jointes">
+                    <field name="devis_and_chq" widget="many2many_binary" context="{'default_project_field': 'devis_and_chq'}"/>
+                    <field name="cgv" widget="many2many_binary" context="{'default_project_field': 'cgv'}"/>
                     <field name="taxes_foncieres" widget="many2many_binary" />
                     <field name="fact_elec" widget="many2many_binary"/>
                     <field name="mandat_mairie" widget="many2many_binary"/>
@@ -206,11 +206,11 @@
                         </group>
                         <group string="Document VT" colspan="4">
                             <group>
-                                <button name="action_generate_xls" string="Générer le fichier pour la visite technique" type="object" colspan="4" class="btn btn-secondary"/>
+                                <button name="action_generate_xls" string="Générer le fichier pour la visite technique" type="object" colspan="4" class="btn btn-secondary" attrs="{'invisible':[('has_complete_partner_address','=',False)]}"/>
                             </group>
                             <group>
                                 <field name="vt_file" widget="binary" invisible="1"/>
-                                <field name="vt_filed" widget="many2many_binary" filename="filename"/>
+<!--                                <field name="vt_filed" widget="many2many_binary" filename="filename"/>-->
 <!--                            <field name="vt_filename" invisible="1"/>-->
                             </group>
                         </group>
@@ -315,7 +315,9 @@
                     </field>
                     <group string="Document AFT" colspan="4">
                         <group>
-                            <button name="action_generate_xls_aft" string="Générer le fichier AFT" type="object" colspan="4" class="btn btn-secondary"/>
+                            <button name="action_generate_xls_aft" string="Générer le fichier AFT"
+                                     attrs="{'invisible':[('has_complete_partner_address','=',False)]}"
+                                    type="object" colspan="4" class="btn btn-secondary"/>
                         </group>
                         <group>
                             <field name="aft_file" widget="binary" invisible="1"/>
@@ -363,7 +365,8 @@
                     </field>
                     <group string="Document SAV" colspan="4">
                         <group>
-                            <button name="action_generate_xls_sav" string="Générer le fichier SAV" type="object" colspan="4" class="btn btn-secondary"/>
+                            <button name="action_generate_xls_sav" string="Générer le fichier SAV"  attrs="{'invisible':[('has_complete_partner_address','=',False)]}"
+                                    type="object" colspan="4" class="btn btn-secondary"/>
                         </group>
                         <group>
                             <field name="sav_file" widget="binary" invisible="1"/>

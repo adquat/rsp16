@@ -1,5 +1,4 @@
 from datetime import date
-
 from odoo import api, fields, models
 from odoo.tools import date_utils
 from openpyxl import load_workbook, Workbook
@@ -7,7 +6,6 @@ from odoo.modules.module import get_module_resource
 from io import BytesIO
 from openpyxl.writer.excel import save_virtual_workbook
 import base64
-
 import io
 import json
 import base64
@@ -27,21 +25,23 @@ class ProjectProject(models.Model):
                                                       '|', ('company_id', '=', False), ('company_id', '=', self.env.company)])
 
 ## Infos client: Onglet fiche client
-    @api.depends('partner_id', 'partner_id.name')
-    def _compute_partner_name(self):
-        for project in self:
-            partner_name = project.partner_id and project.partner_id.name or ''
-            if partner_name:
-                split = partner_name.split(' ')
-                if len(split) > 1:
-                    project.name_partner = split[-1]
-                    project.prenom_partner = split[0]
-                else:
-                    project.name_partner = partner_name
-                    project.prenom_partner = ''
+    # @api.depends('partner_id', 'partner_id.name')
+    # def _compute_partner_name(self):
+    #     for project in self:
+    #         # partner_name = project.partner_id and project.partner_id.name or ''
+            # if partner_name:
+            #     split = partner_name.split(' ')
+            #     if len(split) > 1:
+            #         project.name_partner = split[-1]
+            #         project.prenom_partner = split[0]
+            #     else:
+            #         project.name_partner = partner_name
+            #         project.prenom_partner = ''
 
-    name_partner = fields.Char(string="Nom", compute='_compute_partner_name', store=True)
-    prenom_partner = fields.Char(string="Prénom", compute='_compute_partner_name', store=True)
+    # name_partner = fields.Char(string="Nom", compute='_compute_partner_name', store=True)
+    name_partner = fields.Char(string="Nom", related='partner_id.lastname')
+    # prenom_partner = fields.Char(string="Prénom", compute='_compute_partner_name', store=True)
+    prenom_partner = fields.Char(string="Prénom", related='partner_id.firstname')
     birth_partner = fields.Date(string="Date de Naissance", related='partner_id.date_birth_partner')
     street = fields.Char(related='partner_id.street')
     street2 = fields.Char(related='partner_id.street2')
@@ -184,7 +184,7 @@ class ProjectProject(models.Model):
     file_to_join = fields.Many2many('ir.attachment', 'ir_attachment_file_join', string='Fichiers à joindre')
     pic_to_join = fields.Many2many('ir.attachment', 'ir_attachment_pic_join', string='Photos à joindre')
     vt_file = fields.Many2one('ir.attachment', string='Fiche Technique générée', copy=False)
-    vt_filed = fields.Many2many('ir.attachment', 'ir_attachment_project_vt', string='Fiche technique remplie')
+    # vt_filed = fields.Many2many('ir.attachment', 'ir_attachment_project_vt', string='Fiche technique remplie')
     # vt_filename = fields.Char("VT Filename")
 
     @api.onchange('tech_id', 'file_to_join', 'pic_to_join', 'date_vt')
@@ -255,10 +255,13 @@ class ProjectProject(models.Model):
             'target': 'new'
         }
 
-    @api.depends('partner_id')
+    @api.depends('name_partner', 'prenom_partner', 'birth_partner', 'street', 'city', 'zip', 'country_id', 'phone_partner',
+                 'mobile_partner', 'mail_partner')
     def _compute_has_complete_partner_address(self):
         for project in self:
-            project.has_complete_partner_address = project.partner_id.city and project.partner_id.country_id
+            project.has_complete_partner_address = project.name_partner and project.prenom_partner and project.birth_partner \
+                                   and project.street and project.city and project.zip and project.country_id \
+                                   and (project.phone_partner or project.mobile_partner) and project.mail_partner or False
 
 ##Fichiers et infos onglet Pose
     pose_ids = fields.One2many('project.pose', 'project_id')
@@ -274,13 +277,13 @@ class ProjectProject(models.Model):
     all_file_is_good = fields.Boolean(default=False)
     has_complete_partner_address = fields.Boolean(compute='_compute_has_complete_partner_address')
 
-    @api.onchange('aft', 'picture', 'calepinage_emphase', 'implantation_emphase', 'quotation_alaska', 'invoice_alaska', 'invoice_finalRsp')
-    def _onchange_all_file_good(self):
-        for project in self:
-            if project.aft and project.picture and project.calepinage_emphase and project.implantation_emphase and project.quotation_alaska and project.invoice_alaska and project.invoice_finalRsp:
-                project.all_file_is_good = True
-            else:
-                pass
+    # @api.onchange('aft', 'picture', 'calepinage_emphase', 'implantation_emphase', 'quotation_alaska', 'invoice_alaska', 'invoice_finalRsp')
+    # def _onchange_all_file_good(self):
+    #     for project in self:
+    #         if project.aft and project.picture and project.calepinage_emphase and project.implantation_emphase and project.quotation_alaska and project.invoice_alaska and project.invoice_finalRsp:
+    #             project.all_file_is_good = True
+    #         else:
+    #             pass
 
     @api.onchange('date_install')
     def _onchange_stage_id(self):
@@ -677,7 +680,7 @@ class ProjectProject(models.Model):
         return {(0, 'Fiche Client'): {'folder_field':'documents_folder_fiche',
                     'fields':['devis_and_chq','cgv','taxes_foncieres','fact_elec','mandat_mairie','mandat_enedis']},
                 (1, 'Visite Technique'): {'folder_field':'documents_folder_vt',
-                    'fields':['file_to_join','pic_to_join','vt_filed']},
+                    'fields':['file_to_join','pic_to_join']},
                 (2, 'Mairie'): {'folder_field':'documents_folder_mairie',
                     'fields':['mairie_answer_to_join','recepisse_to_join','other_attachments_to_join','abf_to_join','rsp_to_join']},
                 (3, 'Pose'): {'folder_field':'documents_folder_pose',
@@ -711,7 +714,7 @@ class ProjectProject(models.Model):
                 for field_tmp in folder_to_change:
                     attachment = project[field_tmp]
                     #LA ON CHERCHER LE DOCUMENT DE LA PJ POUR MODIFIER
-                    document = self.env['documents.document'].search([('attachment_id', '=',attachment.id)])
+                    document = self.env['documents.document'].search([('attachment_id', 'in',attachment.ids)])
                     new_subfolder = project[new_subfolder_field]
                     if document and new_subfolder:
                         document.folder_id = new_subfolder.id
