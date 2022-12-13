@@ -7,10 +7,11 @@
             <field name="name">RSP 1 - SMS confirmation rdv visite technique</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="body">Bonjour {{ object.partner_id.name }},
-                Je vous confirme votre rendez-vous avec notre technicien pour votre visite technique le : {{ format_datetime(object.date_vt, tz=object.env.user.tz, lang_code=object.partner_id.lang) if object.date_vt else '' }}
-            Cette visite dure 1 heure.
-            Cordialement,
-            RHONE SOLAIRE PRO</field>
+                Je vous confirme votre rendez-vous avec notre technicien pour votre visite technique le {{format_date(object.date_vt) if object.date_vt else ''}} à
+                {{ format_time(time=object.date_vt, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) if object.date_vt else ''}}.
+                Cette visite dure 1 heure.
+                Cordialement,
+                RHONE SOLAIRE PRO</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
         </record>
 
@@ -18,10 +19,10 @@
             <field name="name">RSP 2 - SMS confirmation installation solaire</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="body">Bonjour {{ object.partner_id.name }},
-                Je vous confirme que votre installation solaire aura lieu sur 1 et/ou 2 jours le et/ou les : {{ format_date(object.date_install) if object.date_install else '' }}
-            Les techniciens arriveront entre 08 et 09 h, ils vous contactent avant d’arriver.
-            Cordialement,
-            RHONE SOLAIRE PRO</field>
+                Je vous confirme que votre installation solaire aura lieu {{ 'le ' if object.date_start_install == object.date_end_install else 'du ' }}{{ format_date(object.date_start_install) }}{{ ' au ' if object.date_start_install != object.date_end_install else '.'}}{{ format_date(object.date_end_install) if object.date_start_install != object.date_end_install else ''}}{{ '.' if object.date_start_install != object.date_end_install else ''}}
+                Les techniciens arriveront entre 08 et 09 h, ils vous contactent avant d’arriver.
+                Cordialement,
+                RHONE SOLAIRE PRO</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
         </record>
 
@@ -29,9 +30,10 @@
             <field name="name">RSP 3 - SMS confirmation fin d’installation solaire (FDI)</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="body">Bonjour {{ object.partner_id.name }},
-                Je vous confirme que votre fin d’installation solaire aura lieu le : {{ format_datetime(object.date_fdi, tz=object.env.user.tz, lang_code=object.partner_id.lang) if object.date_fdi else '' }}
-            Cordialement,
-            RHONE SOLAIRE PRO</field>
+                Je vous confirme que votre fin d’installation solaire aura lieu le {{format_date(object.date_fdi) if object.date_fdi else ''}} à
+                {{ format_time(time=object.date_fdi, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) if object.date_fdi else ''}}.
+                Cordialement,
+                RHONE SOLAIRE PRO</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
         </record>
 
@@ -39,7 +41,8 @@
             <field name="name">RSP 4 - SMS confirmation SAV</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="body">Bonjour {{ object.partner_id.name }},
-                Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le : {{ format_datetime(object.date_sav, tz=object.env.user.tz, lang_code=object.partner_id.lang) if object.date_sav else '' }}
+                Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le {{format_date(object.date_sav) if object.date_sav else ''}} à
+                {{ format_time(time=object.date_sav, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) if object.date_sav else ''}}.
             Cordialement,
             RHONE SOLAIRE PRO</field>
             <field name="lang">{{ object.partner_id.lang }}</field>

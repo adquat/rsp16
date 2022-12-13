@@ -9,9 +9,15 @@ import base64
 import io
 import json
 import base64
+from odoo.exceptions import UserError
+
 class ProjectProject(models.Model):
     _name = 'project.project'
     _inherit = ['mail.thread.phone', 'project.project']
+    def button_dummy(self):
+        # TDE FIXME: this button is very interesting
+        return True
+
     def _get_document_partner(self):
         return self.partner_id
     def _phone_get_number_fields(self):
@@ -94,7 +100,13 @@ class ProjectProject(models.Model):
     date_recepisse = fields.Date('Date récépissé mairie')
     abf = fields.Boolean('ABF', default=False)
     domofinance = fields.Boolean('Domofinance', default=False)
-    dossier_complet = fields.Boolean('Dossier Complet', default=False, compute="_compute_dossier_complet", readonly=True)
+    dossier_complet = fields.Boolean('Dossier Complet', default=False, compute="_compute_dossier_complet", readonly=True,
+                                     help="Pour qu'un dossier soit complet il faut : \n" \
+                                          "* Coordonnées : Nom + Prénom + Rue + Code Postal + Ville + Pays + Téléphone ou Mobile + Email \n" \
+                                          "* Informations importantes : Montant HT + Date signature + Puissance choisie + Commerciaux \n" \
+                                          "* Si puissance existante : RV/Auto + CRAE + BTA \n" \
+                                          "* Les pièces jointes : Si OA, il faut la PJ OA"
+                                     )
     vt_complet = fields.Boolean('VT Complete', default=False, compute="_compute_vt_complet", readonly=True)
 
     @api.depends('name_partner', 'prenom_partner', 'birth_partner', 'street', 'city', 'zip', 'country_id', 'phone_partner',
@@ -104,7 +116,7 @@ class ProjectProject(models.Model):
         for project in self:
             project.dossier_complet = False
             #COORDONNEES
-            coordonnees_complete = project.name_partner and project.prenom_partner and project.birth_partner \
+            coordonnees_complete = project.name_partner and project.prenom_partner \
                                    and project.street and project.city and project.zip and project.country_id \
                                    and (project.phone_partner or project.mobile_partner) and project.mail_partner
             #POWER
@@ -113,19 +125,13 @@ class ProjectProject(models.Model):
             else:
                 power_complete = True
 
-            #MSB
-            if (project.gestion_surplus == 'msb' and project.msb) or project.gestion_surplus != 'msb':
-                msb_complete = True
-            else:
-                msb_complete = False
-
             #PJs
             pjs_standard = project.devis_and_chq and project.taxes_foncieres and project.cgv and project.fact_elec \
                            and project.mandat_mairie and project.mandat_enedis and project.amount_ht \
                            and project.date_signature and project.power_choose and project.user_ids
 
             #CHECK
-            if coordonnees_complete and pjs_standard and power_complete and msb_complete:
+            if coordonnees_complete and pjs_standard and power_complete:
                 if (project.gestion_surplus == 'oa' and project.mandat_OA) or project.gestion_surplus != 'oa':
                     project.dossier_complet = True
             if project.dossier_complet and project.stage_id == self.env.ref('adquat_rsp.project_project_stage_new'):
@@ -145,12 +151,18 @@ class ProjectProject(models.Model):
                 project.amount_commission = project.amount_ht * project.prct_commission
             else:
                 project.amount_commission = 0.0
-    @api.depends('pose_ids', 'pose_ids.date_install')
+    @api.depends('pose_ids', 'pose_ids.date_start_install','pose_ids.date_end_install', 'pose_id_mylight', 'pose_id_enphase', 'stage_id', 'gestion_surplus')
     def _compute_pose(self):
         for project in self:
             project.pose_id = False
+            project.pose_id_good = False
             if project.pose_ids:
                 project.pose_id = project.pose_ids[-1].id
+                if project.stage_id == self.env.ref('adquat_rsp.project_project_stage_pose_planned'):
+                    if project.gestion_surplus == 'msb':
+                        project.pose_id_good = project.pose_id_mylight and project.pose_id_enphase or False
+                    else:
+                        project.pose_id_good = project.pose_id_enphase or False
 
 ## Champ hors onglet
     gestion_surplus = fields.Selection([
@@ -169,7 +181,9 @@ class ProjectProject(models.Model):
     pose_id = fields.Many2one('project.pose',string="Pose actuelle", compute="_compute_pose", store=True)
     pose_id_mylight = fields.Boolean(string="MyLight Pose actuelle", related="pose_id.monitoring_mylight")
     pose_id_enphase = fields.Boolean(string="Enphase Pose actuelle", related="pose_id.enphase")
-    date_install = fields.Date("Date d'installation", related="pose_id.date_install", store=True)
+    pose_id_good = fields.Boolean(string="Pose OK", compute="_compute_pose")
+    date_start_install = fields.Date("Date de début de l'installation", related="pose_id.date_start_install", store=True)
+    date_end_install = fields.Date("Date de fin de l'installation", related="pose_id.date_end_install", store=True)
     #techs_name = fields.Char("Nom des techs")
     tech_ids = fields.Many2many('hr.employee', 'project_tech_ids', string="Techniciens",
                                 domain=lambda self: [('department_id', '=', self.env.ref('adquat_rsp.hr_department_tech').id)])
@@ -222,7 +236,7 @@ class ProjectProject(models.Model):
             else:
                 project.done = False
 
-    @api.onchange('mairie_answer', 'mairie_answer_to_join', 'rsp_to_join')
+    @api.onchange('mairie_answer', 'mairie_answer_to_join', 'rsp_to_join', 'mairie_answer_sent')
     def _onchange_stage_id_mairie(self):
         for project in self:
             if project.mairie_answer:
@@ -230,7 +244,7 @@ class ProjectProject(models.Model):
                 project.date_mairie = fields.Date.today()
             if ((project.mairie_answer == 'yes' and project.mairie_answer_to_join) or project.rsp_to_join) and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_mairie_done').id:
                 project.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id
-            if project.mairie_answer == 'yes' and not project.mairie_answer_sent:
+            if project.mairie_answer == 'yes' and not project.mairie_answer_sent and project.mairie_answer_to_join:
                 args = {
                     'auto_delete_message': True,
                     'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
@@ -240,7 +254,8 @@ class ProjectProject(models.Model):
                     project.message_post_with_template(self.env.ref('adquat_rsp.mail_auto_accord_mairie').id,  **{
                         'auto_delete_message': False,
                         'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
-                        'email_layout_xmlid': 'mail.mail_notification_light'
+                        'email_layout_xmlid': 'mail.mail_notification_light',
+                        'attachment_ids': project.mairie_answer_to_join and project.mairie_answer_to_join.ids or False,
                     })
                     project.mairie_answer_sent = True
             else:
@@ -248,7 +263,7 @@ class ProjectProject(models.Model):
     def action_fsm_navigate(self):
         if not self.partner_id.partner_latitude and not self.partner_id.partner_longitude:
             self.partner_id.geo_localize()
-        url = "https://www.google.com/maps/dir/?api=1&destination=%s,%s" % (self.partner_id.partner_latitude, self.partner_id.partner_longitude)
+        url = "https://www.google.com/maps/dir/?api=1&origin=%s,%s&destination=%s,%s" % (self.company_id.partner_id.partner_latitude, self.company_id.partner_id.partner_longitude, self.partner_id.partner_latitude, self.partner_id.partner_longitude)
         return {
             'type': 'ir.actions.act_url',
             'url': url,
@@ -274,21 +289,20 @@ class ProjectProject(models.Model):
     # quotation_alaska = fields.Many2many('ir.attachment', 'ir_attachment_all_quot_alaska', string='Devis Alaska')
     # invoice_alaska = fields.Many2many('ir.attachment', 'ir_attachment_all_inv_alaska', string='Facture alaska')
     # invoice_finalRsp = fields.Many2many('ir.attachment', 'ir_attachment_all_inv_rsp', string='Facture finale RSP client')
-    all_file_is_good = fields.Boolean(default=False)
+    finish_pose_display = fields.Boolean('Pose terminée affichée', compute='_compute_finish_pose_display')
     has_complete_partner_address = fields.Boolean(compute='_compute_has_complete_partner_address')
+    @api.depends('name_partner', 'prenom_partner', 'birth_partner', 'street', 'city', 'zip', 'country_id', 'phone_partner',
+                 'mobile_partner', 'mail_partner')
+    def _compute_has_complete_partner_address(self):
+        for project in self:
+            project.has_complete_partner_address = project.name_partner and project.prenom_partner and project.birth_partner \
+                                   and project.street and project.city and project.zip and project.country_id \
+                                   and (project.phone_partner or project.mobile_partner) and project.mail_partner or False
 
-    # @api.onchange('aft', 'picture', 'calepinage_emphase', 'implantation_emphase', 'quotation_alaska', 'invoice_alaska', 'invoice_finalRsp')
-    # def _onchange_all_file_good(self):
-    #     for project in self:
-    #         if project.aft and project.picture and project.calepinage_emphase and project.implantation_emphase and project.quotation_alaska and project.invoice_alaska and project.invoice_finalRsp:
-    #             project.all_file_is_good = True
-    #         else:
-    #             pass
-
-    @api.onchange('date_install')
+    @api.onchange('date_start_install','date_end_install')
     def _onchange_stage_id(self):
         for project in self:
-            if project.date_install and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id:
+            if project.date_start_install and project.date_end_install and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id:
                 project.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_planned').id
             else:
                 pass
@@ -297,8 +311,10 @@ class ProjectProject(models.Model):
         self.stage_id = self.env.ref('adquat_rsp.project_project_stage_mes').id
 
     def create_fdi(self):
-
         self.ensure_one()
+        if self.fdi_ids.filtered(lambda fdi: fdi.state == 'planif'):
+            raise UserError("Il y a déjà une FDI programmée. \nVeuillez la clore avant d'en créer une autre.")
+
         new_context = self.env.context.copy()
         new_context['default_type'] = 'fdi'
         new_context['default_project_id'] = self.id
@@ -313,102 +329,70 @@ class ProjectProject(models.Model):
         }
 
 ## Infos FDI
-    date_fdi = fields.Datetime('Date FDI', compute="_compute_date_fdi")
+    fdi_id = fields.Many2one('fdi.object',string="Dernière FDI", compute="_compute_fdi", store=True)
     fdi_ids = fields.One2many('fdi.object', 'project_id')
     aft_file = fields.Many2one('ir.attachment', string='AFT générée', copy=False)
+    date_fdi = fields.Datetime("Date FDI", related="fdi_id.date", store=True, tracking=True)
+    state_fdi = fields.Selection([('planif', 'Programmée'),('finish', 'Terminée'),],
+                                 string="Etat FDI", related="fdi_id.state", store=True)
 
-    @api.depends('fdi_ids')
-    def _compute_date_fdi(self):
+    def _track_template(self, changes):
+        res = super(ProjectProject, self)._track_template(changes)
+        project = self[0]
+        if any(field in ('date_fdi', 'date_sav') for field in changes) and 'stage_id' not in changes and project.stage_id.mail_template_id:
+            res['stage_id'] = (project.stage_id.mail_template_id, {
+                'auto_delete_message': False,
+                'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
+                'email_layout_xmlid': 'mail.mail_notification_light'
+            }
+        )
+        return res
+    @api.depends('fdi_ids', 'fdi_ids.date')
+    def _compute_fdi(self):
         for project in self:
             last_fdi = project.fdi_ids[-1] if project.fdi_ids else False
-            if last_fdi and last_fdi.date and last_fdi.state == 'planif':
-                project.date_fdi = last_fdi.date
+            if last_fdi and last_fdi.date:
+                project.fdi_id = last_fdi.id
             else:
-                project.date_fdi = False
-
-    @api.onchange('date_fdi')
-    def _onchange_date_fdi(self):
-        if self.date_fdi:
-            template = self.env.ref('adquat_rsp.mail_auto_end_install')
-            mail_body = template.body_html.split('<t t-out="object.partner_id.name"/>')
-            mail_body = self.partner_id.name.join(mail_body)
-            mail_body = mail_body.split('<t t-out="object.date_fdi" style="text-align: center;"/>')
-            mail_body = self.date_fdi.strftime('%d/%m/%Y à %Hh%M').join(mail_body)
-
-            mail = self.env['mail.compose.message'].create({
-                'partner_ids': self.partner_id.ids,
-                'subject': template.subject,
-                'body': mail_body,
-                'composition_mode': 'comment',
-                'subtype_id': 1,
-                'model': 'project.project',
-                'res_id': self.ids[0],
-                'template_id': template.id
-            })
-            mail.action_send_mail()
-
+                project.fdi_id = False
 
 ## Infos SAV
     sav_ids = fields.One2many('sav.object', 'project_id')
-    date_sav = fields.Datetime('Date SAV', compute="_compute_date_sav")
+    sav_id = fields.Many2one('sav.object',string="Dernièr SAV", compute="_compute_sav", store=True)
     sav_file = fields.Many2one('ir.attachment', string='SAV généré', copy=False)
-    @api.depends('sav_ids')
-    def _compute_date_sav(self):
+    date_sav = fields.Datetime("Date SAV", related="sav_id.date", store=True, tracking=True)
+    state_sav = fields.Selection([
+        ('planif', 'Programmé'),
+        ('finish', 'Terminé'),
+    ], string="Etat SAV", related="sav_id.state", store=True)
+
+    @api.depends('sav_ids', 'sav_ids.date')
+    def _compute_sav(self):
         for project in self:
             last_sav = project.sav_ids[-1] if project.sav_ids else False
-            if last_sav and last_sav.date and last_sav.state == 'planif':
-                project.date_sav = last_sav.date
+            if last_sav and last_sav.date:
+                project.sav_id = last_sav.id
             else:
-                project.date_sav = False
-
-    @api.onchange('date_sav')
-    def _onchange_date_sav(self):
-        if self.date_sav:
-            template = self.env.ref('adquat_rsp.mail_auto_sav')
-            mail_body = template.body_html.split('<t t-out="object.partner_id.name"/>')
-            mail_body = self.partner_id.name.join(mail_body)
-            mail_body = mail_body.split("""<t t-out="object.date_sav.strftime('%d/%m/%Y à %Hh%M')" style="text-align: center;"/>""")
-            mail_body = self.date_sav.strftime('%d/%m/%Y à %Hh%M').join(mail_body)
-
-            mail = self.env['mail.compose.message'].create({
-                'partner_ids': self.partner_id.ids,
-                'subject': template.subject,
-                'body': mail_body,
-                'subtype_id': 1,
-                'composition_mode': 'comment',
-                'model': 'project.project',
-                'res_id': self.ids[0],
-                'template_id': template.id
-            })
-            mail.action_send_mail()
+                project.sav_id = False
 
 ## Infos Enedis et Consuel: Onglet mise en servcie
     # Enedis
     numb_pdr = fields.Char('Créat° Numéro PDR')
     consuel_transmitted_enedis = fields.Boolean('Consuel transmis à Enedis', default=False)
     synthese = fields.Many2many('ir.attachment', 'ir_attachment_synthese_enedis', string='Synthèse')
-    enedis_done = fields.Boolean('Enedis Fait?')
+    enedis_done = fields.Boolean('Enedis validé')
 
     @api.onchange('numb_pdr', 'synthese')
     def _onchange_enedis_done(self):
         if self.numb_pdr and self.synthese:
             self.enedis_done = True
             template = self.env.ref('adquat_rsp.mail_auto_synthese_enedis')
-            mail_body = template.body_html.split('<t t-out="object.partner_id.name"/>')
-            mail_body = self.partner_id.name.join(mail_body)
-
-            mail = self.env['mail.compose.message'].create({
-                'partner_ids': [self.partner_id.id],
-                'subject': template.subject,
-                'body': mail_body,
-                'subtype_id': 1,
-                'composition_mode': 'comment',
-                'model': 'project.project',
-                'res_id': self.ids[0],
-                'attachment_ids': self.synthese.ids,
-                'template_id': template.id
-            })
-            mail.action_send_mail()
+            if template:
+                self.message_post_with_template(template.id,  **{
+                    'auto_delete_message': False,
+                    'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
+                    'email_layout_xmlid': 'mail.mail_notification_light',
+                    'attachment_ids': [(6, 0, self.synthese.ids)]})
         else:
             self.enedis_done = False
 
@@ -417,6 +401,8 @@ class ProjectProject(models.Model):
 
     def create_sav(self):
         self.ensure_one()
+        if self.sav_ids.filtered(lambda sav: sav.state == 'planif'):
+            raise UserError("Il y a déjà un SAV programmé. \nVeuillez le clore avant d'en créer un autre.")
         new_context = self.env.context.copy()
         new_context['default_type'] = 'sav'
         new_context['default_project_id'] = self.id
@@ -440,7 +426,8 @@ class ProjectProject(models.Model):
     date_attestation = fields.Date('Date attestation visée')
     pdf_consuel = fields.Many2many('ir.attachment', 'ir_attachment_pdf_consuel', string='PDF du Consuel')
     fileTech_and_schema = fields.Many2many('ir.attachment', 'ir_attachment_filetech', string='Doss Tech + Schéma')
-    consuel_done = fields.Boolean('Consuel Fait?')
+    consuel_done = fields.Boolean('Consuel validé')
+    consuel_sent = fields.Boolean('Consuel envoyé')
 
     #MSB
     contrat_mylight = fields.Boolean('Contrat MyLight', default=False)
@@ -449,60 +436,31 @@ class ProjectProject(models.Model):
     def _onchange_contrat_mylight(self):
         if self.contrat_mylight:
             template = self.env.ref('adquat_rsp.mail_auto_end_install_souscription_mylight')
-            mail_body = template.body_html.split('<t t-out="object.partner_id.name"/>')
-            mail_body = self.partner_id.name.join(mail_body)
-
-            mail = self.env['mail.compose.message'].create({
-                'partner_ids': [self.partner_id.id],
-                'subject': template.subject,
-                'body': mail_body,
-                'subtype_id': 1,
-                'composition_mode': 'comment',
-                'model': 'project.project',
-                'res_id': self.ids[0],
-                'template_id': template.id
-            })
-            mail.action_send_mail()
+            self.message_post_with_template(template.id,  **{
+                'auto_delete_message': False,
+                'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
+                'email_layout_xmlid': 'mail.mail_notification_light',})
 
     @api.onchange('shipping_number', 'fileTech_and_schema')
     def _onchange_consuel_done(self):
         if self.shipping_number and self.fileTech_and_schema:
             self.consuel_done = True
-            if self.gestion_surplus == 'msb':
-                template = self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_msb')
-                mail_body = template.body_html.split('<t t-out="object.partner_id.name"/>')
-                mail_body = self.partner_id.name.join(mail_body)
-
-                mail = self.env['mail.compose.message'].create({
-                    'partner_ids': [self.partner_id.id],
-                    'subject': template.subject,
-                    'body': mail_body,
-                    'subtype_id': 1,
-                    'composition_mode': 'comment',
-                    'attachment_ids': self.pdf_consuel.ids,
-                    'model': 'project.project',
-                    'res_id': self.ids[0],
-                    'template_id': template.id
-                })
-                mail.action_send_mail()
-            elif self.gestion_surplus == 'oa':
-                template = self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_oa')
-                mail_body = template.body_html.split('<t t-out="object.partner_id.name"/>')
-                mail_body = self.partner_id.name.join(mail_body)
-
-                mail = self.env['mail.compose.message'].create({
-                    'partner_ids': [self.partner_id.id],
-                    'subject': template.subject,
-                    'body': mail_body,
-                    'subtype_id': 1,
-                    'composition_mode': 'comment',
-                    'model': 'project.project',
-                    'res_id': self.ids[0],
-                    'template_id': template.id
-                })
-                mail.action_send_mail()
         else:
             self.consuel_done = False
+    @api.onchange('pdf_consuel')
+    def _onchange_pdf_consuel(self):
+        if self.pdf_consuel and not self.consuel_sent:
+            template = self.gestion_surplus == 'msb' and self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_msb') or \
+                self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_oa')
+
+            self.message_post_with_template(template.id,  **{
+                'auto_delete_message': False,
+                'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
+                'email_layout_xmlid': 'mail.mail_notification_light',
+                'attachment_ids': [(6, 0, self.pdf_consuel.ids + [self.env.ref('adquat_rsp.attachment_oa_bien_signer').id,
+                                                      self.env.ref('adquat_rsp.attachment_oa_modifier_numero').id,
+                                                      self.env.ref('adquat_rsp.attachment_oa_recuperer_mdp').id,
+                                                      self.env.ref('adquat_rsp.attachment_oa_livret_producteur').id])]})
 
     nb_quotation_validate = fields.Integer('Devis validés', default=0)
     nb_vt_to_planif = fields.Integer('VT à planifier', default=0)
@@ -552,6 +510,7 @@ class ProjectProject(models.Model):
                     'res_id': self.id,
                     'res_model':'project.project',
                 })
+                self.vt_file = vt
             if vt:
                 base_url = self.env['ir.config_parameter'].get_param('web.base.url')
                 download_url = '/web/content/' + str(vt.id) + '?download=true'
@@ -594,6 +553,7 @@ class ProjectProject(models.Model):
                     'res_id': self.id,
                     'res_model': 'project.project',
                 })
+                self.aft_file = vt
             if vt:
                 base_url = self.env['ir.config_parameter'].get_param('web.base.url')
                 download_url = '/web/content/' + str(vt.id) + '?download=true'
@@ -641,6 +601,7 @@ class ProjectProject(models.Model):
                     'res_id': self.id,
                     'res_model': 'project.project',
                 })
+                self.sav_file = vt
             if vt:
                 base_url = self.env['ir.config_parameter'].get_param('web.base.url')
                 download_url = '/web/content/' + str(vt.id) + '?download=true'
@@ -680,26 +641,30 @@ class ProjectProject(models.Model):
         return {(0, 'Fiche Client'): {'folder_field':'documents_folder_fiche',
                     'fields':['devis_and_chq','cgv','taxes_foncieres','fact_elec','mandat_mairie','mandat_enedis']},
                 (1, 'Visite Technique'): {'folder_field':'documents_folder_vt',
-                    'fields':['file_to_join','pic_to_join']},
+                    'fields':['file_to_join','pic_to_join','vt_file']},
                 (2, 'Mairie'): {'folder_field':'documents_folder_mairie',
                     'fields':['mairie_answer_to_join','recepisse_to_join','other_attachments_to_join','abf_to_join','rsp_to_join']},
                 (3, 'Pose'): {'folder_field':'documents_folder_pose',
                     'fields':['aft','picture','calepinage_emphase','implantation_emphase','quotation_alaska','invoice_alaska','invoice_finalRsp']},
                 (4, 'FDI'): {'folder_field':'documents_folder_fdi',
-                    'fields':[]},
+                    'fields':['aft_file']},
                 (5, 'Mise en Service'): {'folder_field':'documents_folder_mes',
                     'fields':['synthese','pdf_consuel','fileTech_and_schema']},
                 (6, 'SAV'): {'folder_field':'documents_folder_sav',
-                    'fields':[]},
+                    'fields':['aft_file']},
         }
     @api.model_create_multi
     def create(self, vals_list):
-        projects = super(ProjectProject,self).create(vals_list)
+        projects = super().create(vals_list)
         if not self.env.context.get('no_create_folder'):
             projects.filtered(lambda project: project.use_documents)._create_missing_subfolders()
         return projects
     def write(self, vals):
         res = super(ProjectProject,self).write(vals)
+        fdi_change = 'fdi_ids' in vals and any(fdi[2] and fdi[2].get('date',False) for fdi in vals['fdi_ids']) or False
+        sav_change = 'sav_ids' in vals and any(sav[2] and sav[2].get('date',False) for sav in vals['sav_ids']) or False
+        if fdi_change or sav_change:
+            self._send_sms()
         if vals.get('use_documents'):
             self._create_missing_subfolders()
         if vals.get('name'):
@@ -768,7 +733,8 @@ class Pose(models.Model):
         return self.project_id.partner_id
 
     project_id = fields.Many2one('project.project', string='Projet', required=True)
-    date_install = fields.Date("Date d'installation")
+    date_start_install = fields.Date("Date de début")
+    date_end_install = fields.Date("Date de fin")
     notes = fields.Text(string='Notes')
     return_caution = fields.Boolean('Retour chq Caution', default=False)
     monitoring_mylight = fields.Boolean('Monitoring MyLight', default=False)
@@ -782,7 +748,6 @@ class Pose(models.Model):
     quotation_alaska = fields.Many2many('ir.attachment', 'ir_attachment_pose_quot_alaska', string='Devis Alaska')
     invoice_alaska = fields.Many2many('ir.attachment', 'ir_attachment_pose_inv_alaska', string='Facture alaska')
     invoice_finalRsp = fields.Many2many('ir.attachment', 'ir_attachment_pose_inv_rsp', string='Facture finale RSP client')
-    all_file_is_good = fields.Boolean(default=False)
 
 class Fdi(models.Model):
     _name = 'fdi.object'
@@ -799,11 +764,9 @@ class Fdi(models.Model):
         return self.project_id.partner_id
 
     state = fields.Selection([
-        ('a_planif', 'À programmer'),
         ('planif', 'Programmée'),
         ('finish', 'Terminée'),
-        ('no', 'Interrompu')
-    ], string="État", default="a_planif")
+    ], string="État")
     project_id = fields.Many2one('project.project', string='Projet', required=True, ondelete='cascade')
     aft_fdi = fields.Many2many('ir.attachment', 'ir_attachment_aft_fdi', string='AFT')
     date = fields.Datetime('Date')
@@ -818,12 +781,6 @@ class Fdi(models.Model):
     def yes_finish(self):
         self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_mes').id
         self.state = 'finish'
-
-    def no_finish(self):
-        self.state = 'no'
-        self.create({
-            'project_id': self.project_id.id
-        })
 
 class Sav(models.Model):
     _name = 'sav.object'
@@ -851,12 +808,8 @@ class Sav(models.Model):
     return_picture = fields.Many2many('ir.attachment', 'ir_attachment_return_pic_sav', string='Retour Photo')
     sheet_intervention = fields.Many2many('ir.attachment', 'ir_attachment_sheet_inter_sav', string='Feuille d\'intervention')
     picture_sav = fields.Many2many('ir.attachment', 'ir_attachment_picture_sav', string='Photos SAV')
-    state = fields.Selection([
-        ('a_planif', 'À programmer'),
-        ('planif', 'Programmée'),
-        ('finish', 'Terminée'),
-        ('no', 'Interrompu')
-    ], string="État", default="a_planif")
+    state = fields.Selection([('planif', 'Programmé'),
+        ('finish', 'Terminé'),], string="État")
 
     @api.onchange('date')
     def _on_change_state(self):
@@ -870,9 +823,3 @@ class Sav(models.Model):
     def close_project(self):
         self.state = 'finish'
         self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_done').id
-
-    def no_finish_sav(self):
-        self.state = 'no'
-        self.create({
-            'project_id': self.project_id.id
-        })

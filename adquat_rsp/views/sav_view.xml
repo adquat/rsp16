@@ -18,11 +18,10 @@
                 <field name="return_picture" widget="many2many_binary"/>
                 <field name="sheet_intervention" widget="many2many_binary"/>
                 <field name="picture_sav" widget="many2many_binary"/>
-                <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
-                       decoration-danger="(state == 'no')" widget="badge"/>
+                <field name="state" decoration-info="(state == 'planif')" decoration-success="(state == 'finish')"
+                       widget="badge"/>
                 <button name="mise_en_service" type="object" string="Mise en Service" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
                 <button name="close_project" type="object" string="Clôturer Projet" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
-                <button name="no_finish_sav" type="object" string="Clôturer" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
             </tree>
         </field>
     </record>

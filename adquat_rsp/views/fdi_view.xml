@@ -15,10 +15,8 @@
                 <field name="date"/>
                 <field name="aft_fdi" widget="many2many_binary"/>
                 <field name="pictures_fdi" widget="many2many_binary"/>
-                <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
-                       decoration-danger="(state == 'no')" widget="badge"/>
+                <field name="state" decoration-info="(state == 'planif')" decoration-success="(state == 'finish')" widget="badge"/>
                 <button name="yes_finish" type="object" string="Oui" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
-                <button name="no_finish" type="object" string="Non" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
             </tree>
         </field>
     </record>
