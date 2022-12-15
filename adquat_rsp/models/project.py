@@ -270,14 +270,6 @@ class ProjectProject(models.Model):
             'target': 'new'
         }
 
-    @api.depends('name_partner', 'prenom_partner', 'birth_partner', 'street', 'city', 'zip', 'country_id', 'phone_partner',
-                 'mobile_partner', 'mail_partner')
-    def _compute_has_complete_partner_address(self):
-        for project in self:
-            project.has_complete_partner_address = project.name_partner and project.prenom_partner \
-                                   and project.street and project.city and project.zip and project.country_id \
-                                   and (project.phone_partner or project.mobile_partner) and project.mail_partner or False
-
 ##Fichiers et infos onglet Pose
     pose_ids = fields.One2many('project.pose', 'project_id')
     # return_caution = fields.Boolean('Retour chq Caution', default=False)
@@ -295,7 +287,7 @@ class ProjectProject(models.Model):
                  'mobile_partner', 'mail_partner')
     def _compute_has_complete_partner_address(self):
         for project in self:
-            project.has_complete_partner_address = project.name_partner and project.prenom_partner and project.birth_partner \
+            project.has_complete_partner_address = project.name_partner and project.prenom_partner \
                                    and project.street and project.city and project.zip and project.country_id \
                                    and (project.phone_partner or project.mobile_partner) and project.mail_partner or False
 
