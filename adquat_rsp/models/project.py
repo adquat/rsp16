@@ -274,7 +274,7 @@ class ProjectProject(models.Model):
                  'mobile_partner', 'mail_partner')
     def _compute_has_complete_partner_address(self):
         for project in self:
-            project.has_complete_partner_address = project.name_partner and project.prenom_partner and project.birth_partner \
+            project.has_complete_partner_address = project.name_partner and project.prenom_partner \
                                    and project.street and project.city and project.zip and project.country_id \
                                    and (project.phone_partner or project.mobile_partner) and project.mail_partner or False
 
