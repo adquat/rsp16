@@ -433,26 +433,29 @@ class ProjectProject(models.Model):
                 'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
                 'email_layout_xmlid': 'mail.mail_notification_light',})
 
-    @api.onchange('shipping_number', 'fileTech_and_schema')
-    def _onchange_consuel_done(self):
-        if self.shipping_number and self.fileTech_and_schema:
-            self.consuel_done = True
-        else:
-            self.consuel_done = False
+    # @api.onchange('shipping_number', 'fileTech_and_schema')
+    # def _onchange_consuel_done(self):
+    #     if self.shipping_number and self.fileTech_and_schema:
+    #         self.consuel_done = True
+    #     else:
+    #         self.consuel_done = False
+
     @api.onchange('pdf_consuel')
     def _onchange_pdf_consuel(self):
-        if self.pdf_consuel and not self.consuel_sent:
-            template = self.gestion_surplus == 'msb' and self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_msb') or \
-                self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_oa')
+        if self.pdf_consuel:
+            self.consuel_done = True
+            if not self.consuel_sent:
+                template = self.gestion_surplus == 'msb' and self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_msb') or \
+                    self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_oa')
 
-            self.sudo().message_post_with_template(template.id,  **{
-                'auto_delete_message': False,
-                'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
-                'email_layout_xmlid': 'mail.mail_notification_light',
-                'attachment_ids': [(6, 0, self.pdf_consuel.ids + [self.env.ref('adquat_rsp.attachment_oa_bien_signer').id,
-                                                      self.env.ref('adquat_rsp.attachment_oa_modifier_numero').id,
-                                                      self.env.ref('adquat_rsp.attachment_oa_recuperer_mdp').id,
-                                                      self.env.ref('adquat_rsp.attachment_oa_livret_producteur').id])]})
+                self.sudo().message_post_with_template(template.id,  **{
+                    'auto_delete_message': False,
+                    'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
+                    'email_layout_xmlid': 'mail.mail_notification_light',
+                    'attachment_ids': [(6, 0, self.pdf_consuel.ids + [self.env.ref('adquat_rsp.attachment_oa_bien_signer').id,
+                                                          self.env.ref('adquat_rsp.attachment_oa_modifier_numero').id,
+                                                          self.env.ref('adquat_rsp.attachment_oa_recuperer_mdp').id,
+                                                          self.env.ref('adquat_rsp.attachment_oa_livret_producteur').id])]})
 
     nb_quotation_validate = fields.Integer('Devis validés', default=0)
     nb_vt_to_planif = fields.Integer('VT à planifier', default=0)
