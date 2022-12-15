@@ -445,7 +445,7 @@ class ProjectProject(models.Model):
             template = self.gestion_surplus == 'msb' and self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_msb') or \
                 self.env.ref('adquat_rsp.mail_auto_envoi_consuel_if_oa')
 
-            self.message_post_with_template(template.id,  **{
+            self.sudo().message_post_with_template(template.id,  **{
                 'auto_delete_message': False,
                 'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
                 'email_layout_xmlid': 'mail.mail_notification_light',
