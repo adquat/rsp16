@@ -17,6 +17,15 @@ class ProjectProject(models.Model):
     def button_dummy(self):
         # TDE FIXME: this button is very interesting
         return True
+    def message_post_with_template(self, template_id, **kwargs):
+        list_user = self.env['ir.config_parameter'].sudo().get_param('user.no_email', '')
+        if self.env.user.login not in list_user:
+            return super(ProjectProject, self).message_post_with_template(template_id, **kwargs)
+    def _send_sms(self):
+        list_user = self.env['ir.config_parameter'].sudo().get_param('user.no_email', '')
+        for project in self:
+            if self.env.user.login not in list_user:
+                return super(ProjectProject, self)._send_sms(self)
 
     def _get_document_partner(self):
         return self.partner_id
@@ -640,13 +649,16 @@ class ProjectProject(models.Model):
                 (2, 'Mairie'): {'folder_field':'documents_folder_mairie',
                     'fields':['mairie_answer_to_join','recepisse_to_join','other_attachments_to_join','abf_to_join','rsp_to_join']},
                 (3, 'Pose'): {'folder_field':'documents_folder_pose',
-                    'fields':['aft','picture','calepinage_emphase','implantation_emphase','quotation_alaska','invoice_alaska','invoice_finalRsp']},
+                    'fields':[],
+                    'o2m_fields':['aft','picture','calepinage_emphase','implantation_emphase','quotation_alaska','invoice_alaska','invoice_finalRsp']},
                 (4, 'FDI'): {'folder_field':'documents_folder_fdi',
-                    'fields':['aft_file']},
+                    'fields':['aft_file'],
+                    'o2m_fields':['aft_fdi','pictures_fdi']},
                 (5, 'Mise en Service'): {'folder_field':'documents_folder_mes',
                     'fields':['synthese','pdf_consuel','fileTech_and_schema']},
                 (6, 'SAV'): {'folder_field':'documents_folder_sav',
-                    'fields':['aft_file']},
+                    'fields':['sav_file'],
+                    'o2m_fields': ['sheet_intervention','picture_sav']},
         }
     @api.model_create_multi
     def create(self, vals_list):
@@ -654,20 +666,59 @@ class ProjectProject(models.Model):
         if not self.env.context.get('no_create_folder'):
             projects.filtered(lambda project: project.use_documents)._create_missing_subfolders()
         return projects
+    def get_attachments(self):
+        self.ensure_one()
+        TAB_DIC = self._get_subfolders_info()
+        PJ_FIELDS = sum([x['fields'] for x in TAB_DIC.values()],[])
+        pj_data = self.read(PJ_FIELDS, load=False)[0]
+        pj_data.pop('id')
+        pj_ids = sum([type(x) is list and x or [x] for x in pj_data.values() if x not in (False,[])],[])
+
+        POSE_PJ_FIELDS = TAB_DIC[(3, 'Pose')]['o2m_fields']
+        pose_ids = []
+        if self.pose_ids:
+            pose_data = [self.pose_ids.mapped(field).ids for field in POSE_PJ_FIELDS if
+                         self.pose_ids.mapped(field).ids not in (False, [])]
+            pose_ids = sum([type(x) is list and x or [x] for x in pose_data if x not in (False,[])],[])
+
+        SAV_PJ_FIELDS = TAB_DIC[(6, 'SAV')]['o2m_fields']
+        sav_ids = []
+        if self.sav_ids:
+            sav_data = [self.sav_ids.mapped(field).ids for field in SAV_PJ_FIELDS if
+                         self.sav_ids.mapped(field).ids not in (False, [])]
+            sav_ids = sum([type(x) is list and x or [x] for x in sav_data if x not in (False,[])],[])
+
+        FDI_PJ_FIELDS = TAB_DIC[(4, 'FDI')]['o2m_fields']
+        fdi_ids = []
+        if self.fdi_ids:
+            fdi_data = [self.fdi_ids.mapped(field).ids for field in FDI_PJ_FIELDS if
+                         self.fdi_ids.mapped(field).ids not in (False, [])]
+            fdi_ids = sum([type(x) is list and x or [x] for x in fdi_data if x not in (False,[])],[])
+
+        return pj_ids + pose_ids + sav_ids + fdi_ids
+
     def write(self, vals):
-        res = super(ProjectProject,self).write(vals)
-        fdi_change = 'fdi_ids' in vals and any(fdi[2] and fdi[2].get('date',False) for fdi in vals['fdi_ids']) or False
-        sav_change = 'sav_ids' in vals and any(sav[2] and sav[2].get('date',False) for sav in vals['sav_ids']) or False
-        if fdi_change or sav_change:
-            self._send_sms()
-        if vals.get('use_documents'):
-            self._create_missing_subfolders()
-        if vals.get('name'):
-            for project in self.filtered(lambda p: p.documents_folder_id):
+        TAB_DIC = self._get_subfolders_info()
+        old_pj_ids = False
+        res = True
+        for project in self:
+            old_pj_ids = project.get_attachments()
+            res = super(ProjectProject,project).write(vals)
+            new_pj_ids = project.get_attachments()
+            if old_pj_ids:
+                pj_to_del = list(set(old_pj_ids) - set(new_pj_ids))
+                if pj_to_del:
+                    self.env['ir.attachment'].browse(pj_to_del).sudo().unlink()
+
+            fdi_change = 'fdi_ids' in vals and any(fdi[2] and fdi[2].get('date',False) for fdi in vals['fdi_ids']) or False
+            sav_change = 'sav_ids' in vals and any(sav[2] and sav[2].get('date',False) for sav in vals['sav_ids']) or False
+            if fdi_change or sav_change:
+                project._send_sms()
+            if vals.get('use_documents'):
+                project._create_missing_subfolders()
+            if vals.get('name') and project.documents_folder_id:
                 project.documents_folder_id.name = vals['name']
 
-        TAB_DIC = self._get_subfolders_info()
-        for project in self:
             for field_info in TAB_DIC.values():
                 folder_to_change = list(set(field_info['fields']) & set(vals))
                 new_subfolder_field = field_info['folder_field']
