@@ -25,7 +25,7 @@ class ProjectProject(models.Model):
         list_user = self.env['ir.config_parameter'].sudo().get_param('user.no_email', '')
         for project in self:
             if self.env.user.login not in list_user:
-                return super(ProjectProject, self)._send_sms(self)
+                return super(ProjectProject, self)._send_sms()
 
     def _get_document_partner(self):
         return self.partner_id
