@@ -518,27 +518,27 @@
         </field>
     </record>
 
-    <record id="adquat_view_graph_for_dashboard" model="ir.ui.view">
-        <field name="name">adquat.view.graph.for.dashboard</field>
-        <field name="model">project.project</field>
-        <field name="arch" type="xml">
-            <graph type="line" sample="1">
+<!--    <record id="adquat_view_graph_for_dashboard" model="ir.ui.view">-->
+<!--        <field name="name">adquat.view.graph.for.dashboard</field>-->
+<!--        <field name="model">project.project</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <graph type="line" sample="1">-->
 
-            </graph>
-        </field>
-    </record>
+<!--            </graph>-->
+<!--        </field>-->
+<!--    </record>-->
 
-    <record id="adquat_view_pivot_for_dashboard" model="ir.ui.view">
-        <field name="name">adquat.view.pivot.for.dashboard</field>
-        <field name="model">project.project</field>
-        <field name="arch" type="xml">
-            <pivot string="Stock Overview" sample="1">
-                <field name="stage_id" type="col"/>
-                <field name="partner_id" type="row"/>
-<!--                <field name="amount_ht" type="measure"/>-->
-            </pivot>
-        </field>
-    </record>
+<!--    <record id="adquat_view_pivot_for_dashboard" model="ir.ui.view">-->
+<!--        <field name="name">adquat.view.pivot.for.dashboard</field>-->
+<!--        <field name="model">project.project</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <pivot string="Stock Overview" sample="1">-->
+<!--                <field name="stage_id" type="col"/>-->
+<!--                <field name="partner_id" type="row"/>-->
+<!--&lt;!&ndash;                <field name="amount_ht" type="measure"/>&ndash;&gt;-->
+<!--            </pivot>-->
+<!--        </field>-->
+<!--    </record>-->
 <!--    TODO-->
 <!--    <record id="adquat_view_dashboard_project" model="ir.ui.view">-->
 <!--        <field name="name">adquat.view.dashboard.project</field>-->
@@ -570,6 +570,37 @@
 <!--            <field name="target">main</field>-->
 <!--    </record>-->
 
+    <record id="project_project_view_graph" model="ir.ui.view">
+        <field name="name">project.project.view.graph</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <graph string="Projets" sample="1">
+                <field name="stage_id" type="measure"/>
+                <field name="amount_ht" type="measure"/>
+                <field name="user_ids"/>
+                <field name="tech_ids"/>
+                <field name="amount_commission" type="measure"/>
+                <field name="tag_ids" />
+                <field name="color" invisible="1"/>
+            </graph>
+        </field>
+    </record>
+    <record id="project.open_view_project_all_group_stage" model="ir.actions.act_window">
+        <field name="name">Projects</field>
+        <field name="res_model">project.project</field>
+        <field name="domain">[]</field>
+        <field name="view_mode">kanban,form,tree,graph</field>
+        <field name="view_id" ref="adquat_view_project_tree"/>
+        <field name="search_view_id" ref="project.view_project_project_filter"/>
+        <field name="target">main</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No projects found. Let's create one!
+            </p><p>
+                Projects regroup tasks on the same topic, and each has its dashboard.
+            </p>
+        </field>
+    </record>
     <menuitem id="project.menu_projects_group_stage" name="Projects" parent="project.menu_main_pm"
               sequence="1" groups="project.group_project_stages">
         <menuitem action="project.open_view_project_all_group_stage" id="menu_open_all_projects" name="Projets"
