@@ -16,7 +16,8 @@
                   <field name="date_signature"/>
                   <field name="date_vt"/>
                   <field name="date_mairie"/>
-                  <field name="date_install"/>
+                  <field name="date_start_install" widget="daterange" options='{"related_end_date": "date_end_install"}'/>
+                  <field name="date_end_install" widget="daterange" options='{"related_start_date": "date_start_install"}'/>
                   <field name="date_fdi"/>
                   <field name="date_sav"/>
               </tree>
@@ -66,7 +67,8 @@
 <!--            <xpath expr="//header/button[@name='173']" position="replace"/>-->
             <xpath expr="//header" position="inside">
                 <button name="finish_pose" string="Pose terminée" class="oe_highlight" type="object" groups="project.group_project_stages"
-                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_pose_planned)d)]}"/>
+                        attrs="{'invisible': [('pose_id_good', '=', False)]}"/>
+                <field name="pose_id_good" invisible="1"/>
 <!--                <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"/>&lt;!&ndash; ct 10 avant &ndash;&gt;-->
                 <button name="finish_project" string="Clôturer projet" class="oe_highlight" type="object" groups="project.group_project_stages"
                         attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/><!-- ct 5 avant -->
@@ -107,7 +109,7 @@
 
             <xpath expr="//group/group" position="attributes">
                 <attribute name="name">
-                    infos
+                    Infos
                 </attribute>
                 <attribute name="string">
                     Informations générales
@@ -118,10 +120,29 @@
                     <field name="date_signature"/>
                     <field name="date_vt"/>
                     <field name="date_mairie"/>
-<!--                    <field name="pose_id"/>-->
-                    <field name="date_install"/>
-                    <field name="date_fdi"/>
-                    <field name="date_sav"/>
+                    <field name="pose_id" invisible="1"/>
+                    <field name="pose_id_mylight" invisible="1"/>
+                    <field name="pose_id_enphase" invisible="1"/>
+                    <label for="date_start_install" string="Dates d'installation"/>
+                    <div class="o_row">
+                        <field name="date_start_install" widget="daterange" options='{"related_end_date": "date_end_install"}'/>
+                        <i class="fa fa-long-arrow-right mx-1" aria-label="Arrow icon" title="Arrow"/>
+                        <field name="date_end_install" widget="daterange" options='{"related_start_date": "date_start_install"}'/>
+                    </div>
+                    <label for="date_fdi" string="Date FDI"/>
+                    <div class="o_row" colspan="2">
+                        <field name="date_fdi"/>
+<!--                        <i class="fa fa-long-arrow-right mx-1" aria-label="Arrow icon" title="Arrow"/>-->
+                        <field name="state_fdi"  colspan="2" nolabel="1" decoration-success="(state_fdi == 'finish')"
+                                       decoration-info="(state_fdi == 'planif')" widget="badge"/>
+                    </div>
+                    <label for="date_sav" string="Date SAV"/>
+                    <div class="o_row" colspan="2">
+                        <field name="date_sav"/>
+<!--                        <i class="fa fa-long-arrow-right mx-1" aria-label="Arrow icon" title="Arrow"/>-->
+                        <field name="state_sav" nolabel="1" decoration-success="(state_sav == 'finish')"
+                                   decoration-info="(state_sav == 'planif')" widget="badge"/>
+                    </div>
                     <field name="date_mise_service_enedis"/>
                 </group>
             </xpath>
@@ -181,14 +202,19 @@
                         <field name="dossier_complet"/>
                     </group>
                 </group>
-                <group string="Pièces jointes" context="{'project_onglet':'fiche'}">
-                    <field name="devis_and_chq" widget="many2many_binary"/>
-                    <field name="cgv" widget="many2many_binary"/>
-                    <field name="taxes_foncieres" widget="many2many_binary" />
-                    <field name="fact_elec" widget="many2many_binary"/>
-                    <field name="mandat_mairie" widget="many2many_binary"/>
-                    <field name="mandat_enedis" widget="many2many_binary"/>
-                    <field name="mandat_OA" attrs="{'invisible': [('gestion_surplus', '!=', 'oa')]}" widget="many2many_binary"/>
+                <group>
+                    <button name="button_dummy" string="Activer les pièces jointes"
+                        attrs="{'invisible':[('documents_folder_id','!=', False)]}"
+                        type="object" colspan="4"/>
+                </group>
+                <group string="Pièces jointes">
+                    <field name="devis_and_chq" widget="many2many_binary" context="{'default_project_field': 'devis_and_chq'}" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                    <field name="cgv" widget="many2many_binary" context="{'default_project_field': 'cgv'}" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                    <field name="taxes_foncieres" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}" />
+                    <field name="fact_elec" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                    <field name="mandat_mairie" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                    <field name="mandat_enedis" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                    <field name="mandat_OA" attrs="{'invisible': [('gestion_surplus', '!=', 'oa')], 'readonly':[('documents_folder_id','=',False)]}" widget="many2many_binary"/>
                 </group>
             </xpath>
             <xpath expr="//notebook/page[@name='description']" position="after">
@@ -199,16 +225,16 @@
                             <field name="tech_id" widget="many2one_avatar_employee" />
                         </group>
                         <group string="Pièces jointes">
-                            <field name="file_to_join" widget="many2many_binary"/>
-                            <field name="pic_to_join" widget="many2many_binary"/>
+                            <field name="file_to_join" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                            <field name="pic_to_join" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
                         </group>
                         <group string="Document VT" colspan="4">
                             <group>
-                                <button name="action_generate_xls" string="Générer le fichier pour la visite technique" type="object" colspan="4" class="btn btn-secondary"/>
+                                <button name="action_generate_xls" string="Générer le fichier pour la visite technique" type="object" colspan="4" class="btn btn-secondary" attrs="{'invisible':[('has_complete_partner_address','=',False)]}"/>
                             </group>
                             <group>
                                 <field name="vt_file" widget="binary" invisible="1"/>
-                                <field name="vt_filed" widget="many2many_binary" filename="filename"/>
+<!--                                <field name="vt_filed" widget="many2many_binary" filename="filename"/>-->
 <!--                            <field name="vt_filename" invisible="1"/>-->
                             </group>
                         </group>
@@ -222,28 +248,31 @@
 <!--                            <field name="done" groups="base.group_no_one" />-->
                         </group>
                         <group string="Pièces jointes">
-                            <field name="recepisse_to_join" widget="many2many_binary"/>
-                            <field name="other_attachments_to_join" widget="many2many_binary"/>
-                            <field name="abf_to_join" widget="many2many_binary"/>
+                            <field name="recepisse_to_join" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                            <field name="other_attachments_to_join" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                            <field name="abf_to_join" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
                         </group>
                     </group>
                     <group string="Réponse de la mairie">
                         <group string="Informations">
                             <field name="mairie_answer" widget="selection_badge"/>
                             <field name="mairie_answer_date" />
+                            <field name="mairie_answer_sent" />
                         </group>
                         <group string="Pièces jointes">
-                            <field name="mairie_answer_to_join" widget="many2many_binary"/>
-                            <field name="rsp_to_join" widget="many2many_binary"/>
+                            <field name="mairie_answer_to_join" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                            <field name="rsp_to_join" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
                         </group>
                     </group>
                 </page>
                 <page name="pose" string="Pose">
                     <field name="pose_ids" nolabel="1" mode="tree">
                         <tree>
-                            <field name="date_install" width="20%"/>
+                            <field name="date_start_install" width="25%" widget="daterange" options='{"related_end_date": "date_end_install"}'/>
+                            <field name="date_end_install" width="25%" widget="daterange" options='{"related_start_date": "date_start_install"}'/>
                             <field name="return_caution" width="20%"/>
-                            <field name="notes"/>
+                            <field name="monitoring_mylight" width="20%"/>
+                            <field name="enphase" width="10%"/>
                             <field name="quotation_alaska" widget="many2many_binary" optional="hide"/>
                             <field name="invoice_alaska" widget="many2many_binary" optional="hide"/>
                             <field name="aft" widget="many2many_binary" optional="hide"/>
@@ -255,8 +284,17 @@
                         <form>
                             <group>
                                 <group string="Informations">
-                                    <field name="date_install"/>
+                                    <label for="date_start_install" string="Dates d'installation"/>
+                                    <div class="o_row">
+                                        <field name="date_start_install" widget="daterange" options='{"related_end_date": "date_end_install"}'
+                                            attrs="{'required': [('date_end_install', '!=', False)]}"/>
+                                        <i class="fa fa-long-arrow-right mx-1" aria-label="Arrow icon" title="Arrow"/>
+                                        <field name="date_end_install" widget="daterange" options='{"related_start_date": "date_start_install"}'
+                                            attrs="{'required': [('date_start_install', '!=', False)]}"/>
+                                    </div>
                                     <field name="return_caution"/>
+                                    <field name="monitoring_mylight"/>
+                                    <field name="enphase"/>
                                     <field name="notes"/>
                                 </group>
                                 <group string="Pièces jointes">
@@ -268,7 +306,6 @@
                                     <field name="calepinage_emphase" widget="many2many_binary"/>
                                     <field name="invoice_finalRsp" widget="many2many_binary"/>
                                 </group>
-                                <field name="all_file_is_good" invisible="1"/>
                             </group>
                         </form>
                     </field>
@@ -284,22 +321,19 @@
                             <field name="cause"/>
                             <field name="aft_fdi" widget="many2many_binary"/>
                             <field name="pictures_fdi" widget="many2many_binary"/>
-                            <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
-                                   decoration-danger="(state == 'no')" widget="badge"/>
+                            <field name="state" decoration-info="(state == 'planif')" decoration-success="(state == 'finish')"
+                                   widget="badge"/>
                             <button name="yes_finish" type="object" string="Terminer" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
-                            <button name="no_finish" type="object" string="Interrompre" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
                         </tree>
                         <form string="FDI">
                             <header>
                                 <button name="yes_finish" type="object" string="Terminer" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
-                                <button name="no_finish" type="object" string="Interrompre" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
-                                <field name="state" widget="statusbar" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
-                                           decoration-danger="(state == 'no')"/>
+                                <field name="state" widget="statusbar" decoration-info="(state == 'planif')" decoration-success="(state == 'finish')"/>
                             </header>
                                 <sheet>
                                     <group>
-                                        <field name="date"/>
-                                        <field name="cause"/>
+                                        <field name="date" attrs="{'readonly': [('state', '=', 'finish')]}"/>
+                                        <field name="cause" attrs="{'readonly': [('state', '=', 'finish')]}"/>
                                         <field name="aft_fdi" widget="many2many_binary"/>
                                         <field name="pictures_fdi" widget="many2many_binary"/>
                                     </group>
@@ -308,7 +342,9 @@
                     </field>
                     <group string="Document AFT" colspan="4">
                         <group>
-                            <button name="action_generate_xls_aft" string="Générer le fichier AFT" type="object" colspan="4" class="btn btn-secondary"/>
+                            <button name="action_generate_xls_aft" string="Générer le fichier AFT"
+                                     attrs="{'invisible':[('has_complete_partner_address','=',False)]}"
+                                    type="object" colspan="4" class="btn btn-secondary"/>
                         </group>
                         <group>
                             <field name="aft_file" widget="binary" invisible="1"/>
@@ -328,25 +364,23 @@
 <!--                                <field name="return_picture" widget="many2many_binary"/>-->
                             <field name="sheet_intervention" widget="many2many_binary"/>
                             <field name="picture_sav" widget="many2many_binary"/>
-                            <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
-                                   decoration-danger="(state == 'no')" widget="badge"/>
+                            <field name="state" decoration-info="(state == 'planif')" decoration-success="(state == 'finish')"
+                                   widget="badge"/>
                             <button name="mise_en_service" type="object" string="Mise en Service" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
                             <button name="close_project" type="object" string="Clôturer projet" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
-                            <button name="no_finish_sav" type="object" string="Non Fini" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
                         </tree>
                         <form string="SAV">
                             <header>
                                 <button name="mise_en_service" type="object" string="Mise en Service" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
                                 <button name="close_project" type="object" string="Clôturer projet" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
-                                <button name="no_finish_sav" type="object" string="Non Fini" attrs="{'invisible': ['|', ('state', '=', 'no'), ('state', '=', 'finish')]}"/>
-                                <field name="state" decoration-info="(state == 'a_planif')" decoration-success="(state == 'planif')"
-                                       decoration-danger="(state == 'no')"  widget="statusbar"/>
+                                <field name="state" decoration-info="(state == 'planif')" decoration-success="(state == 'finish')"
+                                       widget="statusbar"/>
                             </header>
                                 <sheet>
                                     <group>
-                                        <field name="date"/>
-                                        <field name="type_sav"/>
-                                        <field name="other_type_sav" attrs="{'invisible': [('type_sav', '!=', '3')]}"/>
+                                        <field name="date" attrs="{'readonly': [('state', '=', 'finish')]}"/>
+                                        <field name="type_sav" widget="selection_badge" attrs="{'readonly': [('state', '=', 'finish')]}"/>
+                                        <field name="other_type_sav" attrs="{'invisible': [('type_sav', '!=', '3')], 'readonly': [('state', '=', 'finish')]}"/>
             <!--                                <field name="return_picture" widget="many2many_binary"/>-->
                                         <field name="sheet_intervention" widget="many2many_binary"/>
                                         <field name="picture_sav" widget="many2many_binary"/>
@@ -356,7 +390,8 @@
                     </field>
                     <group string="Document SAV" colspan="4">
                         <group>
-                            <button name="action_generate_xls_sav" string="Générer le fichier SAV" type="object" colspan="4" class="btn btn-secondary"/>
+                            <button name="action_generate_xls_sav" string="Générer le fichier SAV"  attrs="{'invisible':[('has_complete_partner_address','=',False)]}"
+                                    type="object" colspan="4" class="btn btn-secondary"/>
                         </group>
                         <group>
                             <field name="sav_file" widget="binary" invisible="1"/>
@@ -370,22 +405,24 @@
                         <page name="enedis" string="Enedis - Consuel">
                             <group>
                                 <group name="enedis" string="Enedis">
-                                    <field name="enedis_done"/>
                                     <field name="numb_pdr"/>
                                     <field name="consuel_transmitted_enedis"/>
                                     <separator string="Pièces jointes Enedis"/>
-                                    <field name="synthese" widget="many2many_binary"/>
+                                    <field name="synthese" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                                    <separator string="Validation"/>
+                                    <field name="enedis_done"/>
                                 </group>
                                 <group name="consuel" string="Consuel">
-                                    <field name="consuel_done"/>
                                     <field name="shipping_number"/>
                                     <field name="type_of_visit"/>
                                     <field name="intended_date"/>
                                     <field name="date_contre_visite"/>
                                     <field name="date_attestation"/>
                                     <separator string="Pièces jointes Consuel"/>
-                                    <field name="pdf_consuel" widget="many2many_binary"/>
-                                    <field name="fileTech_and_schema" widget="many2many_binary"/>
+                                    <field name="pdf_consuel" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                                    <field name="fileTech_and_schema" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
+                                    <separator string="Validation"/>
+                                    <field name="consuel_done"/>
                                 </group>
                             </group>
                         </page>
@@ -393,11 +430,6 @@
                             <group>
                                 <field name="contrat_mylight"/>
                             </group>
-                        </page>
-                        <page name="oa" string="OA" attrs="{'invisible': [('gestion_surplus', '!=', 'oa')]}">
-
-                        </page>
-                        <page name="other" string="Autre" attrs="{'invisible': [('gestion_surplus', '!=', 'other')]}">
                         </page>
                     </notebook>
                 </page>
@@ -486,27 +518,27 @@
         </field>
     </record>
 
-    <record id="adquat_view_graph_for_dashboard" model="ir.ui.view">
-        <field name="name">adquat.view.graph.for.dashboard</field>
-        <field name="model">project.project</field>
-        <field name="arch" type="xml">
-            <graph type="line" sample="1">
+<!--    <record id="adquat_view_graph_for_dashboard" model="ir.ui.view">-->
+<!--        <field name="name">adquat.view.graph.for.dashboard</field>-->
+<!--        <field name="model">project.project</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <graph type="line" sample="1">-->
 
-            </graph>
-        </field>
-    </record>
+<!--            </graph>-->
+<!--        </field>-->
+<!--    </record>-->
 
-    <record id="adquat_view_pivot_for_dashboard" model="ir.ui.view">
-        <field name="name">adquat.view.pivot.for.dashboard</field>
-        <field name="model">project.project</field>
-        <field name="arch" type="xml">
-            <pivot string="Stock Overview" sample="1">
-                <field name="stage_id" type="col"/>
-                <field name="partner_id" type="row"/>
-<!--                <field name="amount_ht" type="measure"/>-->
-            </pivot>
-        </field>
-    </record>
+<!--    <record id="adquat_view_pivot_for_dashboard" model="ir.ui.view">-->
+<!--        <field name="name">adquat.view.pivot.for.dashboard</field>-->
+<!--        <field name="model">project.project</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <pivot string="Stock Overview" sample="1">-->
+<!--                <field name="stage_id" type="col"/>-->
+<!--                <field name="partner_id" type="row"/>-->
+<!--&lt;!&ndash;                <field name="amount_ht" type="measure"/>&ndash;&gt;-->
+<!--            </pivot>-->
+<!--        </field>-->
+<!--    </record>-->
 <!--    TODO-->
 <!--    <record id="adquat_view_dashboard_project" model="ir.ui.view">-->
 <!--        <field name="name">adquat.view.dashboard.project</field>-->
@@ -538,6 +570,37 @@
 <!--            <field name="target">main</field>-->
 <!--    </record>-->
 
+    <record id="project_project_view_graph" model="ir.ui.view">
+        <field name="name">project.project.view.graph</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <graph string="Projets" sample="1">
+                <field name="stage_id" type="measure"/>
+                <field name="amount_ht" type="measure"/>
+                <field name="user_ids"/>
+                <field name="tech_ids"/>
+                <field name="amount_commission" type="measure"/>
+                <field name="tag_ids" />
+                <field name="color" invisible="1"/>
+            </graph>
+        </field>
+    </record>
+    <record id="project.open_view_project_all_group_stage" model="ir.actions.act_window">
+        <field name="name">Projects</field>
+        <field name="res_model">project.project</field>
+        <field name="domain">[]</field>
+        <field name="view_mode">kanban,form,tree,graph</field>
+        <field name="view_id" ref="adquat_view_project_tree"/>
+        <field name="search_view_id" ref="project.view_project_project_filter"/>
+        <field name="target">main</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No projects found. Let's create one!
+            </p><p>
+                Projects regroup tasks on the same topic, and each has its dashboard.
+            </p>
+        </field>
+    </record>
     <menuitem id="project.menu_projects_group_stage" name="Projects" parent="project.menu_main_pm"
               sequence="1" groups="project.group_project_stages">
         <menuitem action="project.open_view_project_all_group_stage" id="menu_open_all_projects" name="Projets"

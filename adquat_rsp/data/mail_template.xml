@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
     <!-- TODO A MODIFIER PLUS TARD LE NOUPDATE -->
        <record id="mail_auto_vt" model="mail.template">
-           <field name="name">Mail confirmation rdv VT</field>
+           <field name="name">RSP 1 - Mail confirmation rdv VT</field>
            <field name="model_id" ref="project.model_project_project"/>
            <field name="partner_to">{{ object.partner_id.id }}</field>
            <field name="email_from">admin@rhonesolairepro.fr</field>
            <field name="email_to">{{ object.partner_id.email }}</field>
+           <field name="lang">{{ object.partner_id.lang }}</field>
+           <field name="auto_delete" eval="False"/>
            <field name="subject">Confirmation de rdv visite technique</field>
            <field name="body_html" type="html">
                <div style="margin: 0px; padding: 0px;">
-                   Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                    <br/><br/>
-                   Je vous confirme votre rendez-vous avec notre technicien pour votre visite technique le :<br/>
-                   <t t-if="object.date_vt" t-out="format_datetime(dt=object.date_vt, tz=object.env.user.tz) or ''" style="text-align: center;"/>
+                   Je vous confirme votre rendez-vous avec notre technicien pour votre visite technique le <br/>
+                   <t t-if="object.date_vt" t-out="format_date(object.date_vt) or ''" style="text-align: center;">Date</t> à <t t-if="object.date_vt" t-out="format_time(time=object.date_vt, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) or ''">Heure</t>.
                    <br/><br/>
                    Cette visite dure 1 heure.
                    <br/><br/>
@@ -26,18 +28,24 @@
        </record>
 
         <record id="mail_auto_install" model="mail.template">
-            <field name="name">Mail confirmation installation solaire</field>
+            <field name="name">RSP 4 - Mail confirmation installation solaire</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Confirmation installation solaire</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
-                    Je vous confirme que votre installation solaire aura lieu sur 1 et/ou 2 jours le et/ou les:<br/>
-                    <t t-if="object.date_install" t-out="object.date_install.strftime('%d/%m/%Y')" style="text-align: center;"/>
+                    <t t-if="object.date_start_install == object.date_end_install">
+                    Je vous confirme que votre installation solaire aura lieu le <t t-out="format_date(object.date_start_install) or ''">Date Début Installation</t>.
+                    </t>
+                    <t t-else="">
+                    Je vous confirme que votre installation solaire aura lieu du <t t-out="format_date(object.date_start_install) or ''">Date Début Installation</t> au <t t-out="format_date(object.date_end_install) or ''">Date Fin Installation</t>.
+                    </t>
                     <br/><br/>
                     Les techniciens arriveront entre 08 et 09 h, ils vous contacteront avant d'arriver.
                     <br/><br/>
@@ -49,18 +57,20 @@
         </record>
 
         <record id="mail_auto_end_install" model="mail.template">
-            <field name="name">Mail confirmation fin d'installation solaire</field>
+            <field name="name">RSP 5 - Mail confirmation fin d'installation solaire</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Confirmation fin d'installation solaire</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
-                    Je vous confirme que votre fin d'installation solaire aura lieu le :
-                    <br/><t t-if="object.date_fdi" t-out="object.date_fdi.strftime('%d/%m/%Y')" style="text-align: center;"/>
+                    Je vous confirme que votre fin d'installation solaire aura lieu le <br/>
+                    <t t-if="object.date_fdi" t-out="format_date(object.date_fdi) or ''" style="text-align: center;">Date</t> à <t t-if="object.date_fdi" t-out="format_time(time=object.date_fdi, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) or ''">Heure</t>.
                     <br/><br/>
                     Restant à votre disposition,
                     <br/><br/>
@@ -70,18 +80,20 @@
         </record>
 
         <record id="mail_auto_sav" model="mail.template">
-            <field name="name">Mail confirmation SAV</field>
+            <field name="name">RSP 6 - Mail confirmation SAV</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Confirmation SAV</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
-                    Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le :
-                    <br/><t t-if="object.date_sav" t-out="format_datetime(dt=object.date_sav, tz=object.env.user.tz) or ''" style="text-align: center;"/>
+                    Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le  <br/>
+                    <t t-if="object.date_sav" t-out="format_date(object.date_sav) or ''" style="text-align: center;">Date</t> à <t t-if="object.date_sav" t-out="format_time(time=object.date_sav, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) or ''">Heure</t>.
                     <br/><br/>
                     Restant à votre disposition,
                     <br/><br/>
@@ -92,19 +104,20 @@
         </record>
 
         <record id="mail_auto_dp_mairie" model="mail.template">
-            <field name="name">Mail confirmation de la DP à la mairie</field>
+            <field name="name">RSP 2 - Mail confirmation de la DP à la mairie</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Confirmation envoi de la DP à la mairie</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
                     Je vous confirme que votre déclaration préalable de travaux concernant votre installation solaire a été
-                    transmise le:
-                    <br/> <t t-out="object.sending_date_mairie.strftime('%d/%m/%Y')"/>
+                    transmise le <t t-if="object.sending_date_mairie" t-out="object.sending_date_mairie.strftime('%d/%m/%Y')">Date Envoi Mairie</t>.
                     <br/><br/>
                     Restant à votre disposition,
                     <br/><br/>
@@ -114,19 +127,21 @@
         </record>
 
         <record id="mail_auto_accord_mairie" model="mail.template">
-            <field name="name">Mail confirmation accord mairie</field>
+            <field name="name">RSP 3 - Mail confirmation accord mairie</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Confirmation accord mairie</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
                     Nous avons le plaisir de vous transmettre l'accord de votre mairie concernant votre installation solaire.
                     <br/><br/>
-                    Notre service de planification va vous contacter prochainement pour fixer une date d'installation,
+                    Notre service de planification va vous contacter prochainement pour fixer une date d'installation.
                     <br/><br/>
                     Restant à votre disposition,
                     <br/><br/>
@@ -136,19 +151,22 @@
         </record>
 
         <record id="mail_auto_end_install_souscription_mylight" model="mail.template">
-            <field name="name">Mail fin d’installation pour souscription Mylight batterie virtuelle (MSB)</field>
+            <field name="name">RSP 7 - Mail fin d’installation pour souscription Mylight batterie virtuelle (MSB)</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Souscription MyLight batterie virtuelle (MSB)</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
                     Votre installation vient d'être réalisée, vous devez souscrire au contrat d'électricité de MYLIGHT
-                    <b>(si ce n'est pas déjà fait)</b> en cliquant sur le lien: https://souscription.mylight-systems.com/#/offer
-                    <br/>Je vous joins la procédure.
+                    <b>(si ce n'est pas déjà fait)</b> en cliquant sur le lien ci-dessous : <br/><br/>
+                    <a t-attf-href="https://souscription.mylight-systems.com/#/offer" target="_blank">https://souscription.mylight-systems.com/#/offer</a>
+                    <br/><br/>Je vous joins la procédure.
                     <br/><br/>
                     Merci de me confirmer par retour de mail votre souscription.
                     <br/><br/>
@@ -161,15 +179,17 @@
         </record>
 
         <record id="mail_auto_synthese_enedis" model="mail.template">
-            <field name="name">Mail confirmation envoi synthèse Enedis</field>
+            <field name="name">RSP 8 - Mail confirmation envoi synthèse Enedis</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Confirmation envoi synthèse Enedis</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
                     Vous trouverez ci-joint la synthèse de la demande de raccordement Enedis concernant votre installation solaire.
                     <br/><br/>
@@ -182,15 +202,17 @@
         </record>
 
         <record id="mail_auto_envoi_consuel_if_msb" model="mail.template">
-            <field name="name">Mail confirmation envoi attestation Consuel quand MSB</field>
+            <field name="name">RSP 9 - Mail confirmation envoi attestation Consuel quand MSB</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Confirmation envoi attestation Consuel</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
                     Vous trouverez ci-joint l'attestation du Consuel concernant votre installation solaire.
                     <br/><br/>
@@ -205,20 +227,23 @@
         </record>
 
         <record id="mail_auto_envoi_consuel_if_oa" model="mail.template">
-            <field name="name">Mail confirmation envoi attestation Consuel quand OA</field>
+            <field name="name">RSP 10 - Mail confirmation envoi attestation Consuel quand OA</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Confirmation envoi attestation Consuel</field>
+<!--            <field name="attachment_ids" eval="[(6, 0, [ref('adquat_rsp.attachment_oa_bien_signer'),ref('adquat_rsp.attachment_oa_modifier_numero'),ref('adquat_rsp.attachment_oa_recuperer_mdp'),ref('adquat_rsp.attachment_oa_livret_producteur')])]"/>-->
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
                     Vous trouverez ci-joint l'attestation du Consuel concernant votre installation solaire, à bien conserver.<br/>
                     Vous allez recevoir un mail de EDF OA SOLAIRE pour votre contrat d'obligation d'achat.
                     <br/><br/>
-                    Vous pouvez créer votre espace producteur sur leur portail: https://solaire.edf-oa.fr/oasv2/login.action
+                    Vous pouvez créer votre espace producteur sur le <a target="_blank" t-attf-href="https://solaire.edf-oa.fr/oasv2/login.action"> Portail ENEDIS</a>
                     pour suivre l'avancement de la création de votre contrat et facturer votre surplus chaque année.
                     <br/><br/>
                     Je vous joins les procédures que j'ai.
@@ -230,22 +255,25 @@
         </record>
 
         <record id="mail_auto_satisfaction_client" model="mail.template">
-            <field name="name">Mail satisfaction client et avis google</field>
+            <field name="name">RSP 11 - Mail satisfaction client et avis google</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
             <field name="email_from">admin@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
             <field name="subject">Avis google et satisfaction</field>
             <field name="body_html" type="html">
                 <div style="margin: 0px; padding: 0px;">
-                    Bonjour <t t-out="object.partner_id.name"/>,
+                    Bonjour <t t-out="object.partner_id.title.name or ''">Titre</t> <t t-out="object.partner_id.name or ''">Nom du client</t>,
                     <br/><br/>
                     Nous vous remercions de la confiance que vous nous avez accordé pour votre installation solaire.
                     <br/><br/>
                     Nous espérons avoir répondu à vos attentes.
                     <br/><br/>
                     Votre avis nous est précieux et nous erions ravis que vous partagiez votre expérience, vous pouvez cliquer
-                    sur ce lien pour donner votre avis: https://g.page/r/CWjCySRsTaa-EAg/review
+                    sur ce <a target="_blank" t-attf-href="https://www.google.com/search?q=rhone+solaire+pro&amp;rlz=1C1CHBH_frFR711FR711&amp;oq=rhone+solaire+pro&amp;aqs=chrome.0.35i39j0.12347j0j7&amp;sourceid=chrome&amp;ie=UTF-8#lrd=0x47f4c0b4d9c24bef:0xbea64d6c24c9c268,1,,,">lien</a>
+                     pour donner votre avis.
                     <br/><br/>
                     N'hésitez pas à nous recommander auprès de vos proches avec notre offre de parrainage (200 € de réduction
                     sur la commande pour le filleul et 200 € de chèques cadeaux pour le parrain après installation et règlement du

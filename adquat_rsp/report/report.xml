@@ -25,6 +25,35 @@
             <field name="datas" type="base64" file="adquat_rsp/report/sav.xlsx"/>
             <field name="mimetype">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</field>
         </record>
+        <!-- FICHIER EMAIL OA -->
+        <record id="attachment_oa_bien_signer" model="ir.attachment">
+            <field name="name">guide_producteur_-_bien_signer_electroniquement_mon_contrat-v13.pdf</field>
+            <field name="type">binary</field>
+            <field name="description">guide_producteur_-_bien_signer_electroniquement_mon_contrat-v13.pdf</field>
+            <field name="datas" type="base64" file="adquat_rsp/report/guide_producteur_-_bien_signer_electroniquement_mon_contrat-v13.pdf"/>
+            <field name="mimetype">application/pdf</field>
+        </record>
+        <record id="attachment_oa_modifier_numero" model="ir.attachment">
+            <field name="name">guide_producteur_-_modifier_mon_numero_de_telephone-v1.pdf</field>
+            <field name="type">binary</field>
+            <field name="description">guide_producteur_-_modifier_mon_numero_de_telephone-v1.pdf</field>
+            <field name="datas" type="base64" file="adquat_rsp/report/guide_producteur_-_modifier_mon_numero_de_telephone-v1.pdf"/>
+            <field name="mimetype">application/pdf</field>
+        </record>
+        <record id="attachment_oa_recuperer_mdp" model="ir.attachment">
+            <field name="name">guide_producteur_-_recuperer_mon_mot_de_passe-v1.pdf</field>
+            <field name="type">binary</field>
+            <field name="description">guide_producteur_-_recuperer_mon_mot_de_passe-v1.pdf</field>
+            <field name="datas" type="base64" file="adquat_rsp/report/guide_producteur_-_recuperer_mon_mot_de_passe-v1.pdf"/>
+            <field name="mimetype">application/pdf</field>
+        </record>
+        <record id="attachment_oa_livret_producteur" model="ir.attachment">
+            <field name="name">livret_producteur_s21_inf100.pdf</field>
+            <field name="type">binary</field>
+            <field name="description">livret_producteur_s21_inf100.pdf</field>
+            <field name="datas" type="base64" file="adquat_rsp/report/livret_producteur_s21_inf100.pdf"/>
+            <field name="mimetype">application/pdf</field>
+        </record>
     </data>
 
 <!--    <record id="project_document_vt_xlsx" model="ir.actions.report">-->

@@ -18,7 +18,7 @@
                 <group attrs="{'invisible': [('type', '!=', 'sav')]}" colspan="4">
                     <group>
                         <field name="date"/>
-                        <field name="type_sav" attrs="{'required': [('type', '=', 'sav')]}"/>
+                        <field name="type_sav" widget="selection_badge" attrs="{'required': [('type', '=', 'sav')]}"/>
                         <field name="other_type_sav" attrs="{'invisible': [('type', '=', 'sav'),('type_sav', '!=', '3')]}"/>
                     </group>
                 </group>

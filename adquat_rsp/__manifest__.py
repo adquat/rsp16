@@ -26,10 +26,12 @@
                 'base_geolocalize',
                 'sms',
                 'documents_project',
+                'partner_firstname',
     ],
 
     # always loaded
     'data': [
+        'report/report.xml',
         'data/sms_template.xml',
         'data/mail_template.xml',
         'data/project_data.xml',
@@ -40,7 +42,6 @@
         'views/project_view.xml',
         'views/partner_view.xml',
         'wizard/wizard_view.xml',
-        'report/report.xml',
     ],
     'license': 'LGPL-3',
     # only loaded in demonstration mode
