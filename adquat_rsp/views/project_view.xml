@@ -102,6 +102,7 @@
                 </div>
 <!--                <field name="power_choose" string="Puissance (kW"/>-->
                 <field name="gestion_surplus" widget="selection_badge" options="{'horizontal': true}"/>
+                <field name="msb" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}"/>
                 <field name="user_ids" widget="many2many_tags"/>
                 <field name="tech_ids" widget="many2many_tags"/>
                 <separator string="Informations financières"/>
@@ -174,7 +175,6 @@
                                attrs="{'invisible': [('existing_power', '=', 0)]}"/>
                         <field name="crae" attrs="{'invisible': [('existing_power', '=', 0)]}"/>
                         <field name="bta" attrs="{'invisible': [('existing_power', '=', 0)]}"/>
-                        <field name="msb" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}"/>
                     </group>
                 </group>
                 <group>
