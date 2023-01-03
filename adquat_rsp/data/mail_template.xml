@@ -6,7 +6,7 @@
            <field name="name">RSP 1 - Mail confirmation rdv VT</field>
            <field name="model_id" ref="project.model_project_project"/>
            <field name="partner_to">{{ object.partner_id.id }}</field>
-           <field name="email_from">admin@rhonesolairepro.fr</field>
+           <field name="email_from">mazzi@rhonesolairepro.fr</field>
            <field name="email_to">{{ object.partner_id.email }}</field>
            <field name="lang">{{ object.partner_id.lang }}</field>
            <field name="auto_delete" eval="False"/>
@@ -31,7 +31,7 @@
             <field name="name">RSP 4 - Mail confirmation installation solaire</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="email_from">admin@rhonesolairepro.fr</field>
+            <field name="email_from">mazzi@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -60,7 +60,7 @@
             <field name="name">RSP 5 - Mail confirmation fin d'installation solaire</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="email_from">admin@rhonesolairepro.fr</field>
+            <field name="email_from">mazzi@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -83,7 +83,7 @@
             <field name="name">RSP 6 - Mail confirmation SAV</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="email_from">admin@rhonesolairepro.fr</field>
+            <field name="email_from">mazzi@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -154,7 +154,7 @@
             <field name="name">RSP 7 - Mail fin d’installation pour souscription Mylight batterie virtuelle (MSB)</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="email_from">admin@rhonesolairepro.fr</field>
+            <field name="email_from">adv@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -182,7 +182,7 @@
             <field name="name">RSP 8 - Mail confirmation envoi synthèse Enedis</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="email_from">admin@rhonesolairepro.fr</field>
+            <field name="email_from">adv@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -205,7 +205,7 @@
             <field name="name">RSP 9 - Mail confirmation envoi attestation Consuel quand MSB</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="email_from">admin@rhonesolairepro.fr</field>
+            <field name="email_from">adv@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -230,7 +230,7 @@
             <field name="name">RSP 10 - Mail confirmation envoi attestation Consuel quand OA</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="email_from">admin@rhonesolairepro.fr</field>
+            <field name="email_from">adv@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -243,7 +243,7 @@
                     Vous trouverez ci-joint l'attestation du Consuel concernant votre installation solaire, à bien conserver.<br/>
                     Vous allez recevoir un mail de EDF OA SOLAIRE pour votre contrat d'obligation d'achat.
                     <br/><br/>
-                    Vous pouvez créer votre espace producteur sur le <a target="_blank" t-attf-href="https://solaire.edf-oa.fr/oasv2/login.action"> Portail ENEDIS</a>
+                    Vous pouvez créer votre espace producteur sur le <a target="_blank" t-attf-href="https://solaire.edf-oa.fr/oasv2/login.action">Portail EDF OA</a>
                     pour suivre l'avancement de la création de votre contrat et facturer votre surplus chaque année.
                     <br/><br/>
                     Je vous joins les procédures que j'ai.
@@ -258,7 +258,7 @@
             <field name="name">RSP 11 - Mail satisfaction client et avis google</field>
             <field name="model_id" ref="project.model_project_project"/>
             <field name="partner_to">{{ object.partner_id.id }}</field>
-            <field name="email_from">admin@rhonesolairepro.fr</field>
+            <field name="email_from">joanne@rhonesolairepro.fr</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
             <field name="auto_delete" eval="False"/>
@@ -271,7 +271,7 @@
                     <br/><br/>
                     Nous espérons avoir répondu à vos attentes.
                     <br/><br/>
-                    Votre avis nous est précieux et nous erions ravis que vous partagiez votre expérience, vous pouvez cliquer
+                    Votre avis nous est précieux et nous serions ravis que vous partagiez votre expérience, vous pouvez cliquer
                     sur ce <a target="_blank" t-attf-href="https://www.google.com/search?q=rhone+solaire+pro&amp;rlz=1C1CHBH_frFR711FR711&amp;oq=rhone+solaire+pro&amp;aqs=chrome.0.35i39j0.12347j0j7&amp;sourceid=chrome&amp;ie=UTF-8#lrd=0x47f4c0b4d9c24bef:0xbea64d6c24c9c268,1,,,">lien</a>
                      pour donner votre avis.
                     <br/><br/>

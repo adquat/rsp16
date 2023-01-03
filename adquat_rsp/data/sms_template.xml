@@ -11,7 +11,9 @@
                 {{ format_time(time=object.date_vt, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) if object.date_vt else ''}}.
                 Cette visite dure 1 heure.
                 Cordialement,
-                RHONE SOLAIRE PRO</field>
+                RHONE SOLAIRE PRO
+                09 51 69 39 72
+                (ne pas répondre à ce numéro)</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
         </record>
 
@@ -22,7 +24,9 @@
                 Je vous confirme que votre installation solaire aura lieu {{ 'le ' if object.date_start_install == object.date_end_install else 'du ' }}{{ format_date(object.date_start_install) }}{{ ' au ' if object.date_start_install != object.date_end_install else '.'}}{{ format_date(object.date_end_install) if object.date_start_install != object.date_end_install else ''}}{{ '.' if object.date_start_install != object.date_end_install else ''}}
                 Les techniciens arriveront entre 08 et 09 h, ils vous contactent avant d’arriver.
                 Cordialement,
-                RHONE SOLAIRE PRO</field>
+                RHONE SOLAIRE PRO
+                09 51 69 39 72
+                (ne pas répondre à ce numéro)</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
         </record>
 
@@ -33,7 +37,9 @@
                 Je vous confirme que votre fin d’installation solaire aura lieu le {{format_date(object.date_fdi) if object.date_fdi else ''}} à
                 {{ format_time(time=object.date_fdi, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) if object.date_fdi else ''}}.
                 Cordialement,
-                RHONE SOLAIRE PRO</field>
+                RHONE SOLAIRE PRO
+                09 51 69 39 72
+                (ne pas répondre à ce numéro)</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
         </record>
 
@@ -43,8 +49,10 @@
             <field name="body">Bonjour {{ object.partner_id.name }},
                 Je vous confirme que votre rendez-vous pour le SAV de votre installation solaire aura lieu le {{format_date(object.date_sav) if object.date_sav else ''}} à
                 {{ format_time(time=object.date_sav, tz=object.env.user.tz, time_format=&quot;short&quot;, lang_code=object.env.lang) if object.date_sav else ''}}.
-            Cordialement,
-            RHONE SOLAIRE PRO</field>
+                Cordialement,
+                RHONE SOLAIRE PRO
+                09 51 69 39 72
+                (ne pas répondre à ce numéro)</field>
             <field name="lang">{{ object.partner_id.lang }}</field>
         </record>
     </data>

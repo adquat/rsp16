@@ -87,6 +87,8 @@ class ProjectProject(models.Model):
                 self.zip = self.partner_id.zip
             if not self.state_id:
                 self.state_id = self.partner_id.state_id.id
+            # if not self.name:
+            self.name = (self.name_partner or '') + ' ' + ( self.prenom_partner or '' )
 
 ## Infos dossier: Onglet fiche client
     existing_power = fields.Float("Puissance existance")
@@ -186,7 +188,7 @@ class ProjectProject(models.Model):
     date_signature = fields.Date("Date Signature Commande")
     power_choose = fields.Float("Puissance Choisie")
     date_vt = fields.Datetime("Date et heure VT")
-    date_mairie = fields.Date("Date accord mairie")
+    #date_mairie = fields.Date("Date accord mairie")
     pose_id = fields.Many2one('project.pose',string="Pose actuelle", compute="_compute_pose", store=True)
     pose_id_mylight = fields.Boolean(string="MyLight Pose actuelle", related="pose_id.monitoring_mylight")
     pose_id_enphase = fields.Boolean(string="Enphase Pose actuelle", related="pose_id.enphase")
@@ -225,7 +227,7 @@ class ProjectProject(models.Model):
     done = fields.Boolean('Faite / Pas Faite')
     sending_date_mairie = fields.Date('Date d\'envoi ')
     mairie_answer_sent = fields.Boolean('Réponse de la mairie envoyée au client')
-    mairie_answer_date = fields.Date('Date de réponse')
+    mairie_answer_date = fields.Date('Date de réponse mairie')
     mairie_answer = fields.Selection([
         ('yes', 'Accord'),
         ('no', 'Refus')
@@ -245,12 +247,9 @@ class ProjectProject(models.Model):
             else:
                 project.done = False
 
-    @api.onchange('mairie_answer', 'mairie_answer_to_join', 'rsp_to_join', 'mairie_answer_sent')
+    @api.onchange('mairie_answer', 'mairie_answer_to_join', 'rsp_to_join', 'mairie_answer_sent', 'maire_answer_date')
     def _onchange_stage_id_mairie(self):
         for project in self:
-            if project.mairie_answer:
-                project.mairie_answer_date = fields.Date.today()
-                project.date_mairie = fields.Date.today()
             if ((project.mairie_answer == 'yes' and project.mairie_answer_to_join) or project.rsp_to_join) and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_mairie_done').id:
                 project.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_toplan').id
             if project.mairie_answer == 'yes' and not project.mairie_answer_sent and project.mairie_answer_to_join:
@@ -279,6 +278,19 @@ class ProjectProject(models.Model):
             'target': 'new'
         }
 
+    def create_pose(self):
+        self.ensure_one()
+        new_context = self.env.context.copy()
+        new_context['default_type'] = 'pose'
+        new_context['default_project_id'] = self.id
+        return {
+            'name': 'Assistant Pose',
+            'view_mode': 'form',
+            'res_model': 'project.fdi.sav.wizard',
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+            'context': new_context,
+        }
 ##Fichiers et infos onglet Pose
     pose_ids = fields.One2many('project.pose', 'project_id')
     # return_caution = fields.Boolean('Retour chq Caution', default=False)
@@ -440,7 +452,8 @@ class ProjectProject(models.Model):
             self.message_post_with_template(template.id,  **{
                 'auto_delete_message': False,
                 'subtype_id': self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
-                'email_layout_xmlid': 'mail.mail_notification_light',})
+                'email_layout_xmlid': 'mail.mail_notification_light',
+                'attachment_ids': [(6, 0, [self.env.ref('adquat_rsp.attachment_oa_subscription').id])]})
 
     # @api.onchange('shipping_number', 'fileTech_and_schema')
     # def _onchange_consuel_done(self):
@@ -494,7 +507,8 @@ class ProjectProject(models.Model):
 
         ws.cell(7, 3).value = (self.street or '') + (self.street2 and '\n' + self.street2 or '') + \
                               ('\n' + self.zip or '') + (' ' + self.city or '')
-        ws.cell(7, 6).value = self.birth_partner
+        if self.birth_partner:
+            ws.cell(7, 6).value = self.birth_partner
         ws.cell(8, 3).value = self.phone_partner
         ws.cell(8, 6).value = self.mail_partner
         ws.cell(9, 3).value = self.partner_id and self.partner_id.mobile or ''

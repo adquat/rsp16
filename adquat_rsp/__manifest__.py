@@ -3,7 +3,7 @@
     'name': "Adquat RSP",
 
     'summary': """
-        Personalisations diverses pour RSP""",
+        Personnalisations diverses pour RSP""",
 
     'description': """
         Personnalisations diverses pour RSP

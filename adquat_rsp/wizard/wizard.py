@@ -8,8 +8,9 @@ class FdiSavWizard(models.TransientModel):
     _description = "Assistant de création"
 
     project_id = fields.Many2one('project.project', string='Projet', required=True)
-    type = fields.Selection([('fdi', 'FDI'), ('sav', 'SAV')], required=True)
+    type = fields.Selection([('fdi', 'FDI'), ('sav', 'SAV'), ('pose', 'Pose')], required=True)
     date = fields.Datetime('Date prévue', required=True)
+    date_end = fields.Datetime('Date fin')
     #FDI
     cause = fields.Char('Cause interruption')
     #SAV
@@ -30,7 +31,7 @@ class FdiSavWizard(models.TransientModel):
                 'state':'planif',
             })
             self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_fdi').id
-        else:
+        elif self.type == 'sav':
             self.env['sav.object'].create({
                 'project_id': self.project_id.id,
                 'date': self.date,
@@ -39,4 +40,11 @@ class FdiSavWizard(models.TransientModel):
                 'state': 'planif',
             })
             self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_sav').id
+        else:
+            self.env['project.pose'].create({
+                'project_id': self.project_id.id,
+                'date_start_install': self.date,
+                'date_end_install': self.date_end,
+            })
+
         return True

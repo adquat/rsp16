@@ -10,16 +10,17 @@
                   <field name="gestion_surplus"/>
                   <field name="power_choose"/>
                   <field name="currency_id" invisible="1" />
-                  <field name="amount_ht" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Total Montant (€)"/>
-                  <field name="amount_commission" widget="monetary" options="{'currency_field': 'currency_id'}"  sum="Total Commission (€)"/>
-                  <field name="user_id"/>
-                  <field name="date_signature"/>
-                  <field name="date_vt"/>
-                  <field name="date_mairie"/>
-                  <field name="date_start_install" widget="daterange" options='{"related_end_date": "date_end_install"}'/>
-                  <field name="date_end_install" widget="daterange" options='{"related_start_date": "date_start_install"}'/>
-                  <field name="date_fdi"/>
-                  <field name="date_sav"/>
+                  <field name="amount_ht" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Total Montant (€)" optional="show"/>
+                  <field name="amount_commission" widget="monetary" options="{'currency_field': 'currency_id'}"  sum="Total Commission (€)" optional="show"/>
+                  <field name="user_id" optional="show"/>
+                  <field name="date_signature" optional="show"/>
+                  <field name="date_vt" optional="show"/>
+                  <field name="mairie_answer_date" optional="show"/>
+                  <field name="date_start_install" widget="daterange" options='{"related_end_date": "date_end_install"}' optional="show"/>
+                  <field name="date_end_install" widget="daterange" options='{"related_start_date": "date_start_install"}' optional="show"/>
+                  <field name="date_fdi" optional="show"/>
+                  <field name="date_sav" optional="show"/>
+                  <field name="date_mise_service_enedis" optional="show"/>
               </tree>
           </field>
       </record>
@@ -46,6 +47,9 @@
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="arch" type="xml">
+            <field name="stage_id" position="attributes">
+                <attribute name="options">{'fold_field': 'fold'}</attribute>
+            </field>
             <div name="button_box" position="inside">
                 <button class="oe_stat_button" name="%(action_view_documents_project_project)d" groups="documents.group_documents_user"
                     type="action" icon="fa-file-text-o" context="{'default_partner_id': partner_id}">
@@ -119,7 +123,7 @@
                 <group name="date" string="Dates principales">
                     <field name="date_signature"/>
                     <field name="date_vt"/>
-                    <field name="date_mairie"/>
+                    <field name="mairie_answer_date"/>
                     <field name="pose_id" invisible="1"/>
                     <field name="pose_id_mylight" invisible="1"/>
                     <field name="pose_id_enphase" invisible="1"/>
@@ -266,8 +270,10 @@
                     </group>
                 </page>
                 <page name="pose" string="Pose">
+                    <button name="create_pose" string="Créer pose" type="object" groups="project.group_project_stages" colspan="4"/>
+                    <separator string="Liste des poses" />
                     <field name="pose_ids" nolabel="1" mode="tree">
-                        <tree>
+                        <tree readonly="1" create="0" delete="0">
                             <field name="date_start_install" width="25%" widget="daterange" options='{"related_end_date": "date_end_install"}'/>
                             <field name="date_end_install" width="25%" widget="daterange" options='{"related_start_date": "date_start_install"}'/>
                             <field name="return_caution" width="20%"/>

@@ -54,6 +54,13 @@
             <field name="datas" type="base64" file="adquat_rsp/report/livret_producteur_s21_inf100.pdf"/>
             <field name="mimetype">application/pdf</field>
         </record>
+        <record id="attachment_oa_subscription" model="ir.attachment">
+            <field name="name">MYE-0019-Souscription-pas-a-pas-V1.pdf</field>
+            <field name="type">binary</field>
+            <field name="description">MYE-0019-Souscription-pas-a-pas-V1.pdf</field>
+            <field name="datas" type="base64" file="adquat_rsp/report/MYE-0019-Souscription-pas-a-pas-V1.pdf"/>
+            <field name="mimetype">application/pdf</field>
+        </record>
     </data>
 
 <!--    <record id="project_document_vt_xlsx" model="ir.actions.report">-->

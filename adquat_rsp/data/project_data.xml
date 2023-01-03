@@ -45,6 +45,7 @@
         <record id="project_project_stage_mes" model="project.project.stage">
             <field name="sequence">9</field>
             <field name="name">Mise en service</field>
+            <field name="mail_template_id" ref="adquat_rsp.mail_auto_satisfaction_client"/>
         </record>
         <record id="project_project_stage_sav" model="project.project.stage">
             <field name="sequence">10</field>
@@ -56,7 +57,6 @@
             <field name="sequence">11</field>
             <field name="name">Clôturé</field>
             <field name="fold" eval="True"/>
-            <field name="mail_template_id" ref="adquat_rsp.mail_auto_satisfaction_client"/>
         </record>
         <record id="project_project_stage_cancelled" model="project.project.stage">
             <field name="sequence">12</field>
