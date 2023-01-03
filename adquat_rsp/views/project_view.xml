@@ -109,6 +109,7 @@
                 <field name="prct_commission" widget="percentage"/>
                 <field name="amount_commission" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="currency_id" invisible="1"/>
+                <field name="parrainage"/>
             </xpath>
 
             <xpath expr="//group/group" position="attributes">
@@ -157,7 +158,6 @@
                             <field name="prenom_partner"/>
                             <field name="name_partner"/>
                             <field name="birth_partner"/>
-                            <field name="parrainage"/>
                         </group>
                         <group string="Coordonnées">
                             <field name="phone_partner" widget="phone"/>
