@@ -74,7 +74,7 @@ class ProjectProject(models.Model):
                                  domain=lambda self: [('category_id', 'in', self.env.ref('adquat_rsp.res_partner_category_customer').id),
                                 '|', ('company_id', '=', False), ('company_id', '=', self.env.company)])
 
-    @api.onchange('partner_id')
+    @api.onchange('partner_id','name_partner','prenom_partner')
     def _onchange_address(self):
         if self.partner_id:
             if not self.street:
