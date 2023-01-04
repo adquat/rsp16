@@ -47,5 +47,6 @@ class FdiSavWizard(models.TransientModel):
                 'date_start_install': self.date_start,
                 'date_end_install': self.date_end,
             })
+            self.project_id.stage_id = self.env.ref('adquat_rsp.project_project_stage_pose_planned').id
 
         return True
