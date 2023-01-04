@@ -9,7 +9,7 @@ class FdiSavWizard(models.TransientModel):
 
     project_id = fields.Many2one('project.project', string='Projet', required=True)
     type = fields.Selection([('fdi', 'FDI'), ('sav', 'SAV'), ('pose', 'Pose')], required=True)
-    date = fields.Datetime('Date prévue', required=True)
+    date = fields.Datetime('Date prévue')
     date_start = fields.Date('Date Début')
     date_end = fields.Date('Date fin')
     #FDI
