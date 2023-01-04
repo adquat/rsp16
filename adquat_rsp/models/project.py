@@ -280,6 +280,9 @@ class ProjectProject(models.Model):
 
     def create_pose(self):
         self.ensure_one()
+        if not self.tech_ids:
+            raise UserError("Veuillez renseigner les techniciens avant de planifier une pose.")
+
         new_context = self.env.context.copy()
         new_context['default_type'] = 'pose'
         new_context['default_project_id'] = self.id
@@ -443,7 +446,7 @@ class ProjectProject(models.Model):
     consuel_sent = fields.Boolean('Consuel envoyé')
 
     #MSB
-    contrat_mylight = fields.Boolean('Contrat MyLight', default=False)
+    contrat_mylight = fields.Boolean('Envoi email souscription MSB', default=False)
 
     @api.onchange('contrat_mylight')
     def _onchange_contrat_mylight(self):

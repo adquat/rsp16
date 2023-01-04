@@ -35,7 +35,7 @@
                     </group>
                 </group>
                 <footer>
-                    <button string="Créer" type="object" name="validate" class="btn btn-primary"/>
+                    <button string="Créer" type="object" name="validate" class="btn btn-primary" confirm="Etes-vous sûr de la date ? Un email/SMS sera envoyé à la suite de la validation" />
                     <button string="Annuler" special="cancel" />
                 </footer>
             </form>

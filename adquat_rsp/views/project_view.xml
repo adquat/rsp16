@@ -5,6 +5,7 @@
           <field name="model">project.project</field>
           <field name="arch" type="xml">
               <tree string="Projets">
+                  <field name="tag_ids" widget="many2many_tags" optional="hide"/>
                   <field name="name" string="Projets"/>
                   <field name="partner_id"/>
                   <field name="gestion_surplus"/>
@@ -47,6 +48,9 @@
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="arch" type="xml">
+            <field name="tag_ids" position="attributes">
+                <attribute name="options">{'no_create': True, 'no_edit': True}</attribute>
+            </field>
             <field name="stage_id" position="attributes">
                 <attribute name="options">{'fold_field': 'fold'}</attribute>
             </field>
@@ -75,7 +79,7 @@
                 <field name="pose_id_good" invisible="1"/>
 <!--                <button name="create_fdi" string="Créer FDI" type="object" groups="project.group_project_stages"/>&lt;!&ndash; ct 10 avant &ndash;&gt;-->
                 <button name="finish_project" string="Clôturer projet" class="oe_highlight" type="object" groups="project.group_project_stages"
-                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/><!-- ct 5 avant -->
+                        attrs="{'invisible': ['|',('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d), '&amp;', ('contrat_mylight', '=', False),  ('gestion_surplus', '=', 'msb')]}"/><!-- ct 5 avant -->
 <!--                <button name="create_sav" string="Créer SAV" type="object" groups="project.group_project_stages"-->
 <!--                        attrs="{'invisible': [('stage_id', '!=',  %(adquat_rsp.project_project_stage_mes)d)]}"/>&lt;!&ndash; ct 5 avant &ndash;&gt;-->
             </xpath>
@@ -408,7 +412,7 @@
                 </page>
                 <page name="mise_service" string="Mise en Service">
                     <notebook>
-                        <page name="enedis" string="Enedis - Consuel">
+                        <page name="enedis" string="Enedis - Consuel - MyLight">
                             <group>
                                 <group name="enedis" string="Enedis">
                                     <field name="numb_pdr"/>
@@ -417,6 +421,8 @@
                                     <field name="synthese" widget="many2many_binary" attrs="{'readonly':[('documents_folder_id','=',False)]}"/>
                                     <separator string="Validation"/>
                                     <field name="enedis_done"/>
+                                    <separator string="MyLight" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}"/>
+                                    <field name="contrat_mylight" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}"/>
                                 </group>
                                 <group name="consuel" string="Consuel">
                                     <field name="shipping_number"/>
@@ -430,11 +436,6 @@
                                     <separator string="Validation"/>
                                     <field name="consuel_done"/>
                                 </group>
-                            </group>
-                        </page>
-                        <page name="msb" string="MyLight" attrs="{'invisible': [('gestion_surplus', '!=', 'msb')]}">
-                            <group>
-                                <field name="contrat_mylight"/>
                             </group>
                         </page>
                     </notebook>
