@@ -218,7 +218,7 @@ class ProjectProject(models.Model):
             if project.date_vt:
                 if project.file_to_join and project.pic_to_join and project.tech_id and project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_vt_planned').id:
                     project.stage_id = self.env.ref('adquat_rsp.project_project_stage_mairie_todo').id
-                else:
+                elif project.stage_id.id == self.env.ref('adquat_rsp.project_project_stage_vt_toplan').id:
                     project.stage_id = self.env.ref('adquat_rsp.project_project_stage_vt_planned').id
             else:
                 pass
